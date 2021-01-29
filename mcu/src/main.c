@@ -11,6 +11,45 @@ int main (void) {
 }
 
 void gpio_init (void) {
+    
+}
+
+void UART_init (void) {
     // Disable power reduction for USARTS
     PRR0 |= (1<<PRUSART0)|(1<<PRUSART1);
+}
+
+// Receive message from WiFi device
+// Call appropriate send function when message destination is determined
+void wifi_receive (void) {
+
+}
+
+// Send message to WiFi device
+// Needed parameters: message, device address
+void wifi_send (void) {
+
+}
+
+// Receive message from transceiver
+// Call appropriate send function when message destination is determined
+void trans_receive (void) {
+
+}
+
+// Send message through transceiver
+// Needed parameters: message, client NUB, device address
+void trans_send (void) {
+
+}
+
+// Determine whether message needs to route to connected WiFi device or to NUB
+void route_message (void) {
+
+}
+
+// generate directory of client phones and NUBs they are connected to
+// Is NUB mesh topology handled by humpro?
+void refresh_topology (void) {
+
 }
