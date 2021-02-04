@@ -66,7 +66,12 @@ void trans_send (void) {
 
 // Determine whether message needs to route to connected WiFi device or to NUB
 void route_message (void) {
+    // decide what to do with message
+    if (/* Recipient is on another NUB */) {
 
+    } else if (/* Recipient is on this NUB */) {
+
+}
 }
 
 // generate directory of client phones and NUBs they are connected to
