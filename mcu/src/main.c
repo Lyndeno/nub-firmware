@@ -22,6 +22,17 @@ void UART_init (void) {
 // Receive message from WiFi device
 // Call appropriate send function when message destination is determined
 void wifi_receive (void) {
+    // Check if received message waiting in buffer
+    if (UCSR0A & (1<<7 /* TODO: Switch this to name of bit */ )) {
+        // TODO: Handle multi-byte values
+        char address = UDR0; // get address info
+
+        // wait for message to come in
+        while (!(UCSR0A & (1<<7 /* TODO: Switch this to name of bit */ )));
+        char message = UDR0;
+
+        route_message(); // will need input args
+    }
 
 }
 
@@ -34,7 +45,17 @@ void wifi_send (void) {
 // Receive message from transceiver
 // Call appropriate send function when message destination is determined
 void trans_receive (void) {
+    // Check if received message waiting in buffer
+    if (UCSR0A & (1<<7 /* TODO: Switch this to name of bit */ )) {
+        // TODO: Handle multi-byte values
+        char address = UDR0; // get address info
 
+        // wait for message to come in
+        while (!(UCSR0A & (1<<7 /* TODO: Switch this to name of bit */ )));
+        char message = UDR0;
+
+        route_message(); // will need input args
+}
 }
 
 // Send message through transceiver
