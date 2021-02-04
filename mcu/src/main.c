@@ -6,6 +6,11 @@
 // TODO: Figure this out
 //#define F_CPU 1000000
 
+// TODO: Match UART to physical implementation, UART0 and UART1
+
+// IDEA: wifi and transceiver send/receive will probably use very similar code, 
+// figure out how to pass UART registers to function
+
 int main (void) {
 
 }
@@ -39,7 +44,7 @@ void wifi_receive (void) {
 // Send message to WiFi device
 // Needed parameters: message, device address
 void wifi_send (void) {
-
+    
 }
 
 // Receive message from transceiver
@@ -55,7 +60,7 @@ void trans_receive (void) {
         char message = UDR0;
 
         route_message(); // will need input args
-}
+    }
 }
 
 // Send message through transceiver
@@ -71,7 +76,7 @@ void route_message (void) {
 
     } else if (/* Recipient is on this NUB */) {
 
-}
+    }
 }
 
 // generate directory of client phones and NUBs they are connected to
