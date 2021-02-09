@@ -65,21 +65,33 @@ void wifi_receive (void) {
 
 // Send message to WiFi device
 // Needed parameters: message, device address
-void wifi_send (void) {
-    
+void wifi_send (char *message, char *address) {
+    // send the recipient information
+    for (int addr_byte = 0; addr_byte < ADDR_LENGTH; addr_byte++)
+    {
+        while (!(UCSR0A & (1<<RXC0))); // wait for unread transmission
+        
+    }
+
+    // send the message information
+    for (int message_byte = 0; message_byte < MESSAGE_LENGTH; message_byte++)
+    {
+        while (!(UCSR0A & (1<<RXC0))); // wait for unread transmission
+        
+    }
 }
 
 // Receive message from transceiver
 // Call appropriate send function when message destination is determined
 void trans_receive (void) {
     // Check if received message waiting in buffer
-    if (UCSR0A & (1<<7 /* TODO: Switch this to name of bit */ )) {
+    if (UCSR1A & (1<<RXC1)) {
         // TODO: Handle multi-byte values
-        char address = UDR0; // get address info
+        char address = UDR1; // get address info
 
         // wait for message to come in
-        while (!(UCSR0A & (1<<7 /* TODO: Switch this to name of bit */ )));
-        char message = UDR0;
+        while (!(UCSR1A & (1<<RXC1)));
+        char message = UDR1;
 
         route_message(); // will need input args
     }
@@ -94,11 +106,6 @@ void trans_send (void) {
 // Determine whether message needs to route to connected WiFi device or to NUB
 void route_message (void) {
     // decide what to do with message
-    if (/* Recipient is on another NUB */) {
-
-    } else if (/* Recipient is on this NUB */) {
-
-    }
 }
 
 // generate directory of client phones and NUBs they are connected to
