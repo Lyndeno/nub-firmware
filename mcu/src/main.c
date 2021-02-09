@@ -11,6 +11,10 @@
 // IDEA: wifi and transceiver send/receive will probably use very similar code, 
 // figure out how to pass UART registers to function
 
+// lengths to be determined
+#define ADDR_LENGTH 3
+#define MESSAGE_LENGTH 5
+
 int main (void) {
 
 }
