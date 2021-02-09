@@ -32,12 +32,30 @@ void UART_init (void) {
 // Call appropriate send function when message destination is determined
 void wifi_receive (void) {
     // Check if received message waiting in buffer
-    if (UCSR0A & (1<<7 /* TODO: Switch this to name of bit */ )) {
+    if (UCSR0A & (1<<RXC0)) {
         // TODO: Handle multi-byte values
-        char address = UDR0; // get address info
+        char address[ADDR_LENGTH];
+        char message[MESSAGE_LENGTH];
+
+        // get the recipient information
+        for (int addr_byte = 0; addr_byte < ADDR_LENGTH; addr_byte++)
+        {
+            while (!(UCSR0A & (1<<RXC0))); // wait for unread transmission
+            address[addr_byte] = UDR0; // read data
+            UCSR0A &= ~(1<<RXC0); // clear recieve flag 
+        }
+
+        // get the message information
+        for (int message_byte = 0; message_byte < MESSAGE_LENGTH; message_byte++)
+        {
+            while (!(UCSR0A & (1<<RXC0))); // wait for unread transmission
+            message[message_byte] = UDR0; // read data
+            UCSR0A &= ~(1<<RXC0); // clear recieve flag
+        }
+        
 
         // wait for message to come in
-        while (!(UCSR0A & (1<<7 /* TODO: Switch this to name of bit */ )));
+        while (!(UCSR0A & (1<<RXC0)));
         char message = UDR0;
 
         route_message(); // will need input args
