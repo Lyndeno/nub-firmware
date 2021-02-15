@@ -59,3 +59,7 @@ mcu/nbproject/Makefile-local-default.mk
 .gitignore
 mcu/nbproject/Makefile-variables.mk
 mcu/nbproject/Package-default.bash
+/mcu/dist/
+/mcu/build/
+/mcu/nbproject/private
+.generated_files
