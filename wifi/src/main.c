@@ -24,3 +24,19 @@ void setup() {
 void loop () {
     
 }
+
+void mcu_receive() {
+
+}
+
+void mcu_send() {
+
+}
+
+void phone_receive() {
+
+}
+
+void phone_send() {
+
+}
