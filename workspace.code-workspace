@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "mcu"
+		},
+		{
+			"path": "wifi"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {}
+}
