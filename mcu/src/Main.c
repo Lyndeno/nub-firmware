@@ -1,4 +1,7 @@
 #include <avr/io.h>
+
+#define F_CPU 16000000UL
+
 #include <util/delay.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,7 +12,7 @@
 // TODO: Figure this out
 //#define F_CPU 1000000
 
-#define F_CPU 16000000UL
+
 
 // TODO: Match UART to physical implementation, UART0 and UART1
 
@@ -24,12 +27,13 @@ int main (void) {
     DDRB |= (1<<DDB5);
     while(1) {
         PORTB |= (1<<PORTB5);
-        _delay_ms(10000);
+        _delay_ms(1000);
         PORTB &= ~(1<<PORTB5);
-        _delay_ms(10000);
+        _delay_ms(1000);
     }
 }
 
+/*
 void gpio_init (void) {
     
 }
@@ -123,4 +127,4 @@ void route_message (void) {
 // Is NUB mesh topology handled by humpro?
 void refresh_topology (void) {
 
-}
+}*/
