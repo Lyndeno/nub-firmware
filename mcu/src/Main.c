@@ -1,18 +1,15 @@
 #include <avr/io.h>
+#include "io.h"
 
 #define F_CPU 16000000UL
 
 #include <util/delay.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 // TODO: Might need this
 //#include <avr/pgmspace.h>
-
-// TODO: Figure this out
-//#define F_CPU 1000000
-
-
 
 // TODO: Match UART to physical implementation, UART0 and UART1
 
@@ -24,16 +21,16 @@
 #define MESSAGE_LENGTH 5
 
 int main (void) {
-    DDRB |= (1<<DDB5);
+    DDR(PORT_STATUS_LED) |= (1<<PIN_STATUS_LED);
     while(1) {
-        PORTB |= (1<<PORTB5);
+        PORT(PORT_STATUS_LED) |= (1<<PIN_STATUS_LED);
         _delay_ms(1000);
-        PORTB &= ~(1<<PORTB5);
+        PORT(PORT_STATUS_LED) &= ~(1<<PIN_STATUS_LED);
         _delay_ms(1000);
     }
 }
 
-/*
+
 void gpio_init (void) {
     
 }
@@ -47,7 +44,7 @@ void UART_init (void) {
 // Call appropriate send function when message destination is determined
 void wifi_receive (void) {
     // Check if received message waiting in buffer
-    if (UCSR0A & (1<<RXC0)) {
+    if (UCSRA_WIFI & (1<<RXC_WIFI)) {
         // TODO: Handle multi-byte values
         char address[ADDR_LENGTH];
         char message[MESSAGE_LENGTH];
@@ -55,22 +52,22 @@ void wifi_receive (void) {
         // get the recipient information
         for (int addr_byte = 0; addr_byte < ADDR_LENGTH; addr_byte++)
         {
-            while (!(UCSR0A & (1<<RXC0))); // wait for unread transmission
+            while (!(UCSRA_WIFI & (1<<RXC_WIFI))); // wait for unread transmission
             address[addr_byte] = UDR0; // read data
-            UCSR0A &= ~(1<<RXC0); // clear recieve flag 
+            UCSRA_WIFI &= ~(1<<RXC_WIFI); // clear recieve flag 
         }
 
         // get the message information
         for (int message_byte = 0; message_byte < MESSAGE_LENGTH; message_byte++)
         {
-            while (!(UCSR0A & (1<<RXC0))); // wait for unread transmission
+            while (!(UCSRA_WIFI & (1<<RXC_WIFI))); // wait for unread transmission
             message[message_byte] = UDR0; // read data
-            UCSR0A &= ~(1<<RXC0); // clear recieve flag
+            UCSRA_WIFI &= ~(1<<RXC_WIFI); // clear recieve flag
         }
         
 
         // wait for message to come in
-        while (!(UCSR0A & (1<<RXC0)));
+        while (!(UCSRA_WIFI & (1<<RXC_WIFI)));
         char message = UDR0;
 
         route_message(); // will need input args
@@ -84,22 +81,22 @@ void wifi_send (char *message, char *address) {
     // send the recipient information
     for (int addr_byte = 0; addr_byte < ADDR_LENGTH; addr_byte++)
     {
-        while (!(UCSR0A & (1<<RXC0))); // wait for unread transmission
+        while (!(UCSRA_WIFI & (1<<RXC_WIFI))); // wait for unread transmission
         
     }
 
     // send the message information
     for (int message_byte = 0; message_byte < MESSAGE_LENGTH; message_byte++)
     {
-        while (!(UCSR0A & (1<<RXC0))); // wait for unread transmission
+        while (!(UCSRA_WIFI & (1<<RXC_WIFI))); // wait for unread transmission
         
     }
 }
 
-// Receive message from transceiver
+// Receive message/home/lsanche/Projects/nub-firmware/mcu/src/io.h from transceiver
 // Call appropriate send function when message destination is determined
 void trans_receive (void) {
-    // Check if received message waiting in buffer
+    // Check if received message waiting in buffer/home/lsanche/Projects/nub-firmware/mcu/src/io.h
     if (UCSR1A & (1<<RXC1)) {
         // TODO: Handle multi-byte values
         char address = UDR1; // get address info
@@ -127,4 +124,4 @@ void route_message (void) {
 // Is NUB mesh topology handled by humpro?
 void refresh_topology (void) {
 
-}*/
+}
