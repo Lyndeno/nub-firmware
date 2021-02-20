@@ -8,6 +8,9 @@
                 "${workspaceFolder}/main/**",
                 "${workspaceFolder}/build/include"
             ],
+            "defines": [
+                "__ESP_FILE__"
+            ],
             "intelliSenseMode": "linux-gcc-x64",
             "compilerPath": "${IDF_PATH}/../xtensa-lx106-elf/bin/xtensa-lx106-elf-gcc",
             "cStandard": "c11",
