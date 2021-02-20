@@ -22,14 +22,17 @@
 
 int main (void) {
     DDR(PORT_STATUS_LED) |= (1<<PIN_STATUS_LED);
+    DDR(PORT_TEST_LED) |= (1<<PIN_TEST_LED);
     while(1) {
         PORT(PORT_STATUS_LED) |= (1<<PIN_STATUS_LED);
+        PORT(PORT_TEST_LED) &= ~(1<<PIN_TEST_LED);
         _delay_ms(1000);
         PORT(PORT_STATUS_LED) &= ~(1<<PIN_STATUS_LED);
+        PORT(PORT_TEST_LED) |= (1<<PIN_TEST_LED);
         _delay_ms(1000);
     }
 }
-
+/*
 
 void gpio_init (void) {
     
@@ -124,4 +127,4 @@ void route_message (void) {
 // Is NUB mesh topology handled by humpro?
 void refresh_topology (void) {
 
-}
+}*/

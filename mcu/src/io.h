@@ -11,6 +11,9 @@
 #define PORT_STATUS_LED PORTB
 #define PIN_STATUS_LED PORTB5
 
+#define PORT_TEST_LED PORTC
+#define PIN_TEST_LED PORTC0
+
 // define USART registers
 // Wifi
 #define UCSRA_WIFI UCSR0A
