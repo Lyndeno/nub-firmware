@@ -64,4 +64,4 @@ mcu/nbproject/Package-default.bash
 /mcu/nbproject/private
 .generated_files
 /wifi/build/
-/wifi/build/sdkconfig.old
+/wifi/sdkconfig.old
