@@ -6,6 +6,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
+#include "freertos/queue.h"
 #include "rom/ets_sys.h"
 #include "esp_wifi.h"
 //#include "esp_system.h"
@@ -13,6 +14,9 @@
 #include "esp_event_loop.h"
 #include "esp_log.h"
 #include "nvs_flash.h"
+#include "driver/uart.h"
+
+#define BUF_SIZE 1024 // change this as appropriate
 
 #define ESP_WIFI_SSID "NUB"
 #define ESP_WIFI_PASS "capstone1234"
@@ -23,6 +27,8 @@ static const char *TAG = "NUB WiFi";
 const int WIFI_CONNECTED_BIT = BIT0;
 
 static EventGroupHandle_t wifi_event_group;
+
+static QueueHandle_t s_uart0Queue;
 
 static esp_err_t event_handler(void *ctx, system_event_t *event) {
     /* For accessing reason codes in case of disconnection */
@@ -66,6 +72,28 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
     return ESP_OK;
 }
 
+void UART_init (void) {
+    uart_config_t uart_config = {
+        .baud_rate = 115200, // match this with MCU baud
+        .data_bits = UART_DATA_8_BITS,
+        .parity = UART_PARITY_DISABLE,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
+    };
+
+    uart_param_config(UART_NUM_0, &uart_config);
+
+    uart_driver_install(UART_NUM_0, BUF_SIZE * 2, BUF_SIZE * 2, 100, &s_uart0Queue, 0);
+
+    //xTaskCreate(uartEventTask, "uartEventTask", 2048, NULL, 12, NULL); //change as needed
+}
+
+/*
+static void uartEventTask(void *pvParameters) {
+    uart_event_t event;
+    uint8_t *tempBuffer = (uint8_t *)malloc(UART_MAX_NUM_RX_BYTES);
+}*/
+
 void wifi_init_softap() {
     wifi_event_group = xEventGroupCreate();
 
@@ -97,6 +125,7 @@ void wifi_init_softap() {
 }
 
 void app_main() {
+    UART_init();
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
         ESP_ERROR_CHECK(nvs_flash_erase());
@@ -106,4 +135,11 @@ void app_main() {
 
     ESP_LOGI(TAG, "ESP_WIFI_MODE_AP");
     wifi_init_softap();
+
+    while (1)
+    {
+        vTaskDelay(2000 / portTICK_PERIOD_MS);
+        uart_write_bytes(UART_NUM_0, "Hello there\r\n", 12);
+    }
+    
 }
