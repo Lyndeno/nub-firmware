@@ -7,7 +7,7 @@
  * V1: Added functionality for testing UART coms as a echo
  */ 
 
-#define F_CPU 1000000UL	
+#define F_CPU 8000000UL
 
 #include <avr/io.h>
 #include <avr/delay.h>
@@ -17,7 +17,7 @@
 #include <avr/interrupt.h>
 
 
-#define BAUD 9600
+#define BAUD 19200				// 19200 for high transmit power of HUMPRO, 57600 for lower transmit power of HUMPRO
 #define MYUBRR F_CPU/8/BAUD-1
 
 #define RX_BUFFER_SIZE 256
@@ -45,21 +45,26 @@ int main(void)
 	
 	sei();		// Enabling interrupts 
 	USART_setup(MYUBRR);
-	unsigned char array[100];		// Test array to ensure buffer is working
+	unsigned char array[1];		// Test array to ensure buffer is working
 	int i = 0;
+	unsigned char val1[1];
+	uint8_t val2;
+	uint8_t val3;
+	
+
     while (1) 
     {	
+		
 		if (rx0ReadPos != rx0WritePos){	
-			array[i] = getChar();
-			i++;
-			if (i == 100){
-				TX0Write(array,100);
-				i = 0;
-			}		
+			
+			val1[0]= getChar();
+			TX0Write(val1[0],1);
+				
+				
 					
 		}
 
-		_delay_ms(10);
+		_delay_us(1000);
     }
 }
 
