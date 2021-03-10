@@ -2,9 +2,9 @@
 #include "comms.h"
 #include "io.h"
 
-uint16_t buff_read;
-uint16_t buff_write;
-unsigned char buffer0[BUFFER_LENGTH_BYTES];
+size_t buff_read;
+size_t buff_write;
+volatile unsigned char buffer0[BUFFER_LENGTH_BYTES];
 
 ISR(USART0_RX_vect) {
     // when interrupt is triggered then write UDR into buffer so we do not lose information
@@ -29,11 +29,12 @@ void UART_init (unsigned int ubrr) {
     // default settings are 1 start bit, 8 data bits, no parity, 1 stop bit
     buff_write = 0;
     buff_read = 0;
-    memset(buffer0, '\0', sizeof(buffer0));
+    //memset(buffer0, '\0', sizeof(buffer0));
     sei(); //enable interrupts
 }
 
 unsigned char read_buffer() {
+    //while(check_buffer() == '\0');
     if (buff_read == (BUFFER_LENGTH_BYTES)) {
         buff_read = 0;
     }

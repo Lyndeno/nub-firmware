@@ -17,11 +17,15 @@
 // IDEA: wifi and transceiver send/receive will probably use very similar code, 
 // figure out how to pass UART registers to function
 
+void handle_message(void);
+
 int main (void) {
     UART_init(UBRR);
     DDR(PORT_STATUS_LED) |= (1<<PIN_STATUS_LED);
     DDR(PORT_TEST_LED) |= (1<<PIN_TEST_LED);
-    while(1) {
+
+    //char testString[] = "Test String\r\n";
+    /*while(1) {
         PORT(PORT_STATUS_LED) |= (1<<PIN_STATUS_LED);
         //PORT(PORT_TEST_LED) &= ~(1<<PIN_TEST_LED);
         //_delay_ms(1000);
@@ -33,6 +37,44 @@ int main (void) {
             UDR0 = read_buffer();
         }
         //_delay_ms(3000);
+    }*/
+
+    
+
+    uint8_t data_len;
+    while (1) {
+        /*int ind = 0;
+        while (testString[ind] != '\0') {
+            while(!( UCSR0A & (1<<UDRE0)));
+            UDR0 = testString[ind++];
+        }*/
+        PORT(PORT_STATUS_LED) ^= (1<<PIN_STATUS_LED);
+
+        _delay_ms(3000);
+        if(check_buffer() == 0x02) {
+            if (read_buffer() == 0x02) {
+                data_len = read_buffer();
+                switch(read_buffer()) {
+                    case 0x01: // Text message
+                        handle_message();
+                        break;
+                    case 0x02: // New device (dis)connected
+                        break;
+                }
+            }
+        }
+    }
+}
+
+
+void handle_message() {
+    uint16_t mess_len_high, mess_len_low, mess_len;
+    mess_len_high = read_buffer();
+    mess_len_low = read_buffer();
+    mess_len = (mess_len_high << 8) | (mess_len_low & 0xff);
+    for (uint16_t i = 0; i < mess_len; i++) {
+        while(!( UCSR0A & (1<<UDRE0)));
+        UDR0 = read_buffer();
     }
 }
 
