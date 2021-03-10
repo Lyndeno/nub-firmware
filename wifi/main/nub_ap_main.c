@@ -74,7 +74,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
 
 void UART_init (void) {
     uart_config_t uart_config = {
-        .baud_rate = 115200, // match this with MCU baud
+        .baud_rate = 9600, // match this with MCU baud
         .data_bits = UART_DATA_8_BITS,
         .parity = UART_PARITY_DISABLE,
         .stop_bits = UART_STOP_BITS_1,
