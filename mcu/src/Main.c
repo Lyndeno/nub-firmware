@@ -10,6 +10,7 @@
 #include <stdlib.h>
 
 #include "comms.h"
+#include "buffer.h"
 
 
 // TODO: Match UART to physical implementation, UART0 and UART1
@@ -17,7 +18,7 @@
 // IDEA: wifi and transceiver send/receive will probably use very similar code, 
 // figure out how to pass UART registers to function
 
-void handle_message(void);
+void handle_message(circular_buf * );
 
 int main (void) {
     UART_init(UBRR);
@@ -50,13 +51,13 @@ int main (void) {
         }*/
         PORT(PORT_STATUS_LED) ^= (1<<PIN_STATUS_LED);
 
-        _delay_ms(3000);
-        if(check_buffer() == 0x02) {
-            if (read_buffer() == 0x02) {
-                data_len = read_buffer();
-                switch(read_buffer()) {
+        //_delay_ms(3000);
+        if(check_buffer(&buffer0) == 0x02) {
+            if (read_buffer(&buffer0) == 0x02) {
+                data_len = read_buffer(&buffer0);
+                switch(read_buffer(&buffer0)) {
                     case 0x01: // Text message
-                        handle_message();
+                        handle_message(&buffer0);
                         break;
                     case 0x02: // New device (dis)connected
                         break;
@@ -67,14 +68,14 @@ int main (void) {
 }
 
 
-void handle_message() {
+void handle_message(circular_buf *buffer_ptr) {
     uint16_t mess_len_high, mess_len_low, mess_len;
-    mess_len_high = read_buffer();
-    mess_len_low = read_buffer();
+    mess_len_high = read_buffer(buffer_ptr);
+    mess_len_low = read_buffer(buffer_ptr);
     mess_len = (mess_len_high << 8) | (mess_len_low & 0xff);
     for (uint16_t i = 0; i < mess_len; i++) {
         while(!( UCSR0A & (1<<UDRE0)));
-        UDR0 = read_buffer();
+        UDR0 = read_buffer(buffer_ptr);
     }
 }
 
