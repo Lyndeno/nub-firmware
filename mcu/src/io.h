@@ -14,14 +14,6 @@
 #define PORT_TEST_LED PORTC
 #define PIN_TEST_LED PORTC0
 
-// define USART registers
-// Wifi
-#define UCSRA_WIFI UCSR0A
-#define RXC_WIFI RXC0
-#define UDR_WIFI UDR0
-
-// Transceiver
-
 /* Code from ECE312 project, adapt as needed
 #define PORT_LR PORTD
 

@@ -20,12 +20,18 @@ void UART_init (unsigned int ubrr) {
     //PRR0 |= (1<<PRUSART0)|(1<<PRUSART1);
 
     // Enable WiFi UART
-    UBRR0H = (unsigned char)(ubrr>>8);
-    UBRR0L = (unsigned char)(ubrr);
-    UCSR0B = (1<<RXEN0)|(1<<TXEN0);
-    UCSR0B |= (1<<RXCIE0); // enable receive interrupt for circular buffer
+    UBRRH_WIFI = (unsigned char)(ubrr>>8);
+    UBRRL_WIFI = (unsigned char)(ubrr);
+    UCSRB_WIFI = (1<<RXEN_WIFI)|(1<<TXEN_WIFI);
+    UCSRB_WIFI |= (1<<RXCIE_WIFI); // enable receive interrupt for circular buffer
     // default settings are 1 start bit, 8 data bits, no parity, 1 stop bit
     //memset(buffer0, '\0', sizeof(buffer0));
     sei(); //enable interrupts
+}
+
+// Wait for TX register to clear then transmit a byte
+void UART_WiFi_TX (uint8_t byte) {
+    while(!( UCSRA_WIFI & (1<<UDRE_WIFI)));
+    UDR_WIFI = byte;
 }
 

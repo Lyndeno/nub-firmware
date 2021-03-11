@@ -76,8 +76,7 @@ void handle_message(circular_buf *buffer_ptr) {
     mess_len |= read_buffer(buffer_ptr);
 
     for (size_t i = 0; i < mess_len; i++) {
-        while(!( UCSR0A & (1<<UDRE0)));
-        UDR0 = read_buffer(buffer_ptr);
+        UART_WiFi_TX(read_buffer(buffer_ptr));
     }
 }
 
