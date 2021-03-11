@@ -1,6 +1,6 @@
 #include "buffer.h"
 
-circular_buf buffer0;
+circular_buf buff_wifi_rx;
 
 uint8_t read_buffer(circular_buf *buffer) {
     while(buffer->head == buffer->tail); // we don't want to read something that isn't written yet

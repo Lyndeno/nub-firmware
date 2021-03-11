@@ -20,7 +20,7 @@ typedef struct circular_buf {
     bool full;
 } circular_buf;
 
-extern circular_buf buffer0;
+extern circular_buf buff_wifi_rx;
 
 uint8_t read_buffer(circular_buf * );
 uint8_t check_buffer(circular_buf * );

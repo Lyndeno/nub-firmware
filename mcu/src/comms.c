@@ -5,13 +5,13 @@
 
 ISR(USART0_RX_vect) {
     // when interrupt is triggered then write UDR into buffer so we do not lose information
-    buffer0.buff[buffer0.tail++] = UDR0;
-    buffer0.free--;
+    buff_wifi_rx.buff[buff_wifi_rx.tail++] = UDR0;
+    buff_wifi_rx.free--;
 
     PORT(PORT_TEST_LED) ^= (1<<PIN_TEST_LED);
 
-    if (buffer0.tail >= buffer0.max) {
-        buffer0.tail = 0;
+    if (buff_wifi_rx.tail >= buff_wifi_rx.max) {
+        buff_wifi_rx.tail = 0;
     }
 }
 

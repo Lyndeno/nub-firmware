@@ -22,7 +22,7 @@ void handle_message(circular_buf * );
 
 int main (void) {
     // Initialize buffers first as UART needs them
-    init_buffer(&buffer0);
+    init_buffer(&buff_wifi_rx);
     UART_init(UBRR);
     DDR(PORT_STATUS_LED) |= (1<<PIN_STATUS_LED);
     DDR(PORT_TEST_LED) |= (1<<PIN_TEST_LED);
@@ -54,12 +54,12 @@ int main (void) {
         PORT(PORT_STATUS_LED) ^= (1<<PIN_STATUS_LED);
 
         //_delay_ms(3000);
-        if(buffer0.free < buffer0.max) {
-            if (read_buffer(&buffer0) == 0x02) {
-                data_len = read_buffer(&buffer0);
-                switch(read_buffer(&buffer0)) {
+        if(buff_wifi_rx.free < buff_wifi_rx.max) {
+            if (read_buffer(&buff_wifi_rx) == 0x02) {
+                data_len = read_buffer(&buff_wifi_rx);
+                switch(read_buffer(&buff_wifi_rx)) {
                     case 0x01: // Text message
-                        handle_message(&buffer0);
+                        handle_message(&buff_wifi_rx);
                         break;
                     case 0x02: // New device (dis)connected
                         break;
