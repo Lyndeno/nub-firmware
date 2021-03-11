@@ -3,8 +3,8 @@
 
 #include "buffer.h"
 
-void check_frame (circular_buf * );
+void read_frame (circular_buf * );
 
-void handle_message(circular_buf * );
+void route_message(circular_buf * );
 
 #endif

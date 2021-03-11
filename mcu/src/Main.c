@@ -26,7 +26,7 @@ int main (void) {
     while (1) {
         PORT(PORT_STATUS_LED) ^= (1<<PIN_STATUS_LED);
 
-        check_frame(&buff_wifi_rx);
+        read_frame(&buff_wifi_rx);
         
     }
 }
