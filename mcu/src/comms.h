@@ -17,6 +17,16 @@
 #define RXCIE_WIFI RXCIE0 // Receive interrupt enable
 
 // Transceiver
+#define UCSRA_TRANS UCSR1A
+#define UCSRB_TRANS UCSR1B
+#define UBRRH_TRANS UBRR1H
+#define UBRRL_TRANS UBRR1L
+#define RXC_TRANS RXC1
+#define UDR_TRANS UDR1
+#define UDRE_TRANS UDRE1
+#define RXEN_TRANS RXEN1 // Receive enable
+#define TXEN_TRANS TXEN1 // Transmit enable
+#define RXCIE_TRANS RXCIE1 // Receive interrupt enable
 
 // Interrupt on UART0 receive
 ISR(USART0_RX_vect);
