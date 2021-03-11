@@ -10,7 +10,7 @@ ISR(WIFI_RX_vect) {
 
     PORT(PORT_TEST_LED) ^= (1<<PIN_TEST_LED);
 
-    if (buff_wifi_rx.tail >= buff_wifi_rx.max) {
+    if (buff_wifi_rx.tail >= buff_wifi_rx.size) {
         buff_wifi_rx.tail = 0;
     }
 }

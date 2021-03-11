@@ -10,7 +10,7 @@ circular_buf buff_wifi_rx;
  */ 
 uint8_t read_buffer(circular_buf *buffer) {
     while(buffer->head == buffer->tail); // we don't want to read something that isn't written yet
-    if (buffer->head >= buffer->max) { // check if pointer is out of bounds
+    if (buffer->head >= buffer->size) { // check if pointer is out of bounds
         buffer->head = 0; // set pointer to beginning
     }
     uint8_t buff_temp = buffer->buff[buffer->head]; // Store byte in temporary variable before we wipe it
@@ -26,19 +26,19 @@ uint8_t read_buffer(circular_buf *buffer) {
  */ 
 uint8_t check_buffer(circular_buf *buffer) {
     while(buffer->head == buffer->tail); // make sure we aren't reading data that isn't ready
-    if (buffer->head >= buffer->max) { // check if pointer is out of bounds
+    if (buffer->head >= buffer->size) { // check if pointer is out of bounds
         buffer->head = 0; // check if pointer is out of bounds
     }
     return buffer->buff[buffer->head]; // Return value of byte at pointer
 }
 
 /** 
- * Initialize head and tail index to the beginning of the buffer. Allocate memory to the buffer.
+ * Initialize head and tail index to the beginning of the buffer. Allocate memory to the buffer according to given size.
  */ 
-void init_buffer(circular_buf *buffer) {
+void init_buffer(circular_buf *buffer, size_t size) {
     buffer->head = 0; // head is our read pointer
     buffer->tail = 0; // tail is our write pointer
-    buffer->max = BUFFER_LENGTH_BYTES; // set maximum amount of bytes for buffer
-    buffer->buff = (uint8_t *)malloc(buffer->max * sizeof(uint8_t)); // allocate memory to buffer
-    buffer->free = buffer->max; // set free byte count TODO: find a use for free count or remove it
+    buffer->size = size; // set maximum amount of bytes for buffer
+    buffer->buff = (uint8_t *)malloc(buffer->size * sizeof(uint8_t)); // allocate memory to buffer
+    buffer->free = buffer->size; // set free byte count TODO: find a use for free count or remove it
 }

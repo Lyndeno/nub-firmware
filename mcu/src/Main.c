@@ -23,7 +23,7 @@ void check_frame (circular_buf * );
 
 int main (void) {
     // Initialize buffers first as UART needs them
-    init_buffer(&buff_wifi_rx);
+    init_buffer(&buff_wifi_rx, BUFFER_LENGTH_BYTES);
     UART_WiFi_init(UBRR);
     DDR(PORT_STATUS_LED) |= (1<<PIN_STATUS_LED);
     DDR(PORT_TEST_LED) |= (1<<PIN_TEST_LED);
@@ -39,7 +39,7 @@ int main (void) {
 }
 
 void check_frame (circular_buf *buffer_ptr) {
-    if(buffer_ptr->free < buffer_ptr->max) {
+    if(buffer_ptr->free < buffer_ptr->size) {
         uint8_t data_len;
         if (read_buffer(buffer_ptr) == 0x02) {
             data_len = read_buffer(buffer_ptr); // TODO: Can not remember what this is for.

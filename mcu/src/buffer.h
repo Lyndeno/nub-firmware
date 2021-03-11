@@ -18,7 +18,7 @@ typedef struct circular_buf {
     volatile uint8_t * buff; /** Pointer to memory where buffer data is stored */
     size_t head; /** Index to location in buffer to read from */
     volatile size_t tail; /** Index to next location on buffer to write too. */
-    size_t max; /** Maximum size of buffer */
+    size_t size; /** Maximum size of buffer */
     volatile size_t free; /** Free bytes left in buffer */
     bool full; /** Is the buffer full? TODO: This is probably not needed */
 } circular_buf;
@@ -41,8 +41,9 @@ uint8_t check_buffer(circular_buf * );
 
 /** 
  * Initializes a given buffer for use. Head and tail pointers are set to the beginning and memory is allocated for the buffer.
- * @param buffer is a pointer to the buffer to be initialized
+ * @param buffer Pointer to the buffer to be initialized
+ * @param size Size of buffer to be created
  */
-void init_buffer(circular_buf * );
+void init_buffer(circular_buf *, size_t);
 
 #endif
