@@ -25,6 +25,6 @@ void init_buffer(circular_buf *buffer) {
     buffer->head = 0;
     buffer->tail = 0;
     buffer->max = BUFFER_LENGTH_BYTES;
-    buffer->buff = (uint8_t *)malloc(buffer0.max * sizeof(uint8_t));
-    buffer->free = buffer0.max;
+    buffer->buff = (uint8_t *)malloc(buffer->max * sizeof(uint8_t));
+    buffer->free = buffer->max;
 }
