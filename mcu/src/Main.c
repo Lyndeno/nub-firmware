@@ -71,10 +71,9 @@ int main (void) {
 
 
 void handle_message(circular_buf *buffer_ptr) {
-    uint16_t mess_len_high, mess_len_low, mess_len;
-    mess_len_high = read_buffer(buffer_ptr);
-    mess_len_low = read_buffer(buffer_ptr);
-    mess_len = (mess_len_high << 8) | (mess_len_low & 0xff);
+    uint16_t mess_len;
+    mess_len = (read_buffer(buffer_ptr) << 8);
+    mess_len |= read_buffer(buffer_ptr);
 
     for (uint16_t i = 0; i < mess_len; i++) {
         while(!( UCSR0A & (1<<UDRE0)));
