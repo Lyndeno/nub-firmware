@@ -19,6 +19,7 @@
 // figure out how to pass UART registers to function
 
 void handle_message(circular_buf * );
+void check_frame (circular_buf * );
 
 int main (void) {
     // Initialize buffers first as UART needs them
@@ -44,7 +45,7 @@ int main (void) {
 
     
 
-    uint8_t data_len;
+    
     while (1) {
         /*int ind = 0;
         while (testString[ind] != '\0') {
@@ -53,17 +54,24 @@ int main (void) {
         }*/
         PORT(PORT_STATUS_LED) ^= (1<<PIN_STATUS_LED);
 
+        check_frame(&buff_wifi_rx);
+
         //_delay_ms(3000);
-        if(buff_wifi_rx.free < buff_wifi_rx.max) {
-            if (read_buffer(&buff_wifi_rx) == 0x02) {
-                data_len = read_buffer(&buff_wifi_rx);
-                switch(read_buffer(&buff_wifi_rx)) {
-                    case 0x01: // Text message
-                        handle_message(&buff_wifi_rx);
-                        break;
-                    case 0x02: // New device (dis)connected
-                        break;
-                }
+        
+    }
+}
+
+void check_frame (circular_buf *buffer_ptr) {
+    if(buffer_ptr->free < buffer_ptr->max) {
+        uint8_t data_len;
+        if (read_buffer(buffer_ptr) == 0x02) {
+            data_len = read_buffer(buffer_ptr);
+            switch(read_buffer(buffer_ptr)) {
+                case 0x01: // Text message
+                    handle_message(buffer_ptr);
+                    break;
+                case 0x02: // New device (dis)connected
+                    break;
             }
         }
     }
