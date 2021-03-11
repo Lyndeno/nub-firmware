@@ -31,7 +31,19 @@
 #define TRANS_RX_vect USART1_RX_vect // Transceiver receive interrupt vector
 
 // Initialize UART
-void UART_init(unsigned int);
+
+/** 
+ * Initializes UART for data transfer between the MCU and ESP8266 WiFi module.
+ * 
+ * @param ubrr UBRR register value to use for baud rate.
+ */
+void UART_WiFi_init(unsigned int);
+
+/** 
+ * Writes the given byte to the WiFi transmission register when there is no pending transmission.
+ * 
+ * @param byte Byte of data to send to WiFi module
+ */
 void UART_WiFi_TX (uint8_t);
 
 

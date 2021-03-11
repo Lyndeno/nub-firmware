@@ -24,7 +24,7 @@ void check_frame (circular_buf * );
 int main (void) {
     // Initialize buffers first as UART needs them
     init_buffer(&buff_wifi_rx);
-    UART_init(UBRR);
+    UART_WiFi_init(UBRR);
     DDR(PORT_STATUS_LED) |= (1<<PIN_STATUS_LED);
     DDR(PORT_TEST_LED) |= (1<<PIN_TEST_LED);
 
@@ -42,7 +42,7 @@ void check_frame (circular_buf *buffer_ptr) {
     if(buffer_ptr->free < buffer_ptr->max) {
         uint8_t data_len;
         if (read_buffer(buffer_ptr) == 0x02) {
-            data_len = read_buffer(buffer_ptr);
+            data_len = read_buffer(buffer_ptr); // TODO: Can not remember what this is for.
             switch(read_buffer(buffer_ptr)) {
                 case 0x01: // Text message
                     handle_message(buffer_ptr);
@@ -60,11 +60,11 @@ void check_frame (circular_buf *buffer_ptr) {
 
 
 void handle_message(circular_buf *buffer_ptr) {
-    uint16_t mess_len;
-    mess_len = (read_buffer(buffer_ptr) << 8);
-    mess_len |= read_buffer(buffer_ptr);
+    uint16_t mess_len; // variable to store message length
+    mess_len = (read_buffer(buffer_ptr) << 8); // Read in high bits
+    mess_len |= read_buffer(buffer_ptr); // Read in low bits
 
-    for (size_t i = 0; i < mess_len; i++) {
-        UART_WiFi_TX(read_buffer(buffer_ptr));
+    for (size_t i = 0; i < mess_len; i++) { // loop through length of data
+        UART_WiFi_TX(read_buffer(buffer_ptr)); // Write to TX
     }
 }
