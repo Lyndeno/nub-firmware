@@ -1,5 +1,12 @@
 #include <avr/io.h>
-//#include <util/delay.h>
+
+#ifndef F_CPU
+#define F_CPU 16000000UL
+#endif
+
+#ifndef FOSC
+#define FOSC 16000000UL
+#endif
 
 #ifndef LIBIO_H
 #define LIBIO_H
@@ -14,8 +21,6 @@
 #define PORT_TEST_LED PORTC
 #define PIN_TEST_LED PORTC0
 
-/*#ifndef F_CPU
-#define F_CPU 1000000
-#endif*/
+/**/
 
 #endif

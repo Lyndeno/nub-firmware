@@ -1,11 +1,5 @@
 #include "io.h"
 
-#define F_CPU 16000000UL
-#define FOSC 16000000UL
-#define BAUD 9600
-#define UBRR FOSC/16/BAUD-1
-
-#include <util/delay.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -24,7 +18,7 @@ void check_frame (circular_buf * );
 int main (void) {
     // Initialize buffers first as UART needs them
     init_buffer(&buff_wifi_rx, BUFFER_LENGTH_BYTES);
-    UART_WiFi_init(UBRR);
+    UART_WiFi_init(UBRR_WIFI);
     DDR(PORT_STATUS_LED) |= (1<<PIN_STATUS_LED);
     DDR(PORT_TEST_LED) |= (1<<PIN_TEST_LED);
 
@@ -32,8 +26,6 @@ int main (void) {
         PORT(PORT_STATUS_LED) ^= (1<<PIN_STATUS_LED);
 
         check_frame(&buff_wifi_rx);
-
-        //_delay_ms(3000);
         
     }
 }

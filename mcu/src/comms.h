@@ -3,6 +3,9 @@
 
 #include <avr/interrupt.h>
 
+#define BAUD_WIFI 9600
+#define UBRR_WIFI FOSC/16/BAUD_WIFI-1
+
 // define USART registers
 // Wifi
 #define UCSRA_WIFI UCSR0A
