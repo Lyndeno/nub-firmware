@@ -6,6 +6,7 @@
 ISR(USART0_RX_vect) {
     // when interrupt is triggered then write UDR into buffer so we do not lose information
     buffer0.buff[buffer0.tail++] = UDR0;
+    buffer0.free--;
 
     PORT(PORT_TEST_LED) ^= (1<<PIN_TEST_LED);
 
@@ -17,11 +18,6 @@ ISR(USART0_RX_vect) {
 void UART_init (unsigned int ubrr) {
     // Disable power reduction for USARTS
     //PRR0 |= (1<<PRUSART0)|(1<<PRUSART1);
-
-    buffer0.head = 0;
-    buffer0.tail = 0;
-    buffer0.max = BUFFER_LENGTH_BYTES;
-    buffer0.buff = (uint8_t *)malloc(buffer0.max * sizeof(uint8_t));
 
     // Enable WiFi UART
     UBRR0H = (unsigned char)(ubrr>>8);

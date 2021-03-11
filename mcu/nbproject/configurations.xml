@@ -6,6 +6,7 @@
                    projectFiles="true">
       <itemPath>src/io.h</itemPath>
       <itemPath>src/comms.h</itemPath>
+      <itemPath>src/buffer.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -17,6 +18,7 @@
       <logicalFolder name="src" displayName="src" projectFiles="true">
         <itemPath>src/Main.c</itemPath>
         <itemPath>src/comms.c</itemPath>
+        <itemPath>src/buffer.c</itemPath>
       </logicalFolder>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
@@ -24,8 +26,6 @@
                    projectFiles="false">
       <itemPath>Makefile</itemPath>
     </logicalFolder>
-    <itemPath>src/buffer.c</itemPath>
-    <itemPath>src/buffer.h</itemPath>
   </logicalFolder>
   <sourceRootList>
     <Elem>src</Elem>

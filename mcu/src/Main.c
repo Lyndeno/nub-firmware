@@ -21,6 +21,8 @@
 void handle_message(circular_buf * );
 
 int main (void) {
+    // Initialize buffers first as UART needs them
+    init_buffer(&buffer0);
     UART_init(UBRR);
     DDR(PORT_STATUS_LED) |= (1<<PIN_STATUS_LED);
     DDR(PORT_TEST_LED) |= (1<<PIN_TEST_LED);
@@ -52,7 +54,7 @@ int main (void) {
         PORT(PORT_STATUS_LED) ^= (1<<PIN_STATUS_LED);
 
         //_delay_ms(3000);
-        if(check_buffer(&buffer0) == 0x02) {
+        if(buffer0.free < buffer0.max) {
             if (read_buffer(&buffer0) == 0x02) {
                 data_len = read_buffer(&buffer0);
                 switch(read_buffer(&buffer0)) {
@@ -73,6 +75,7 @@ void handle_message(circular_buf *buffer_ptr) {
     mess_len_high = read_buffer(buffer_ptr);
     mess_len_low = read_buffer(buffer_ptr);
     mess_len = (mess_len_high << 8) | (mess_len_low & 0xff);
+
     for (uint16_t i = 0; i < mess_len; i++) {
         while(!( UCSR0A & (1<<UDRE0)));
         UDR0 = read_buffer(buffer_ptr);

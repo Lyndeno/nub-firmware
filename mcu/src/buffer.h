@@ -16,6 +16,7 @@ typedef struct circular_buf {
     size_t head;
     volatile size_t tail;
     size_t max;
+    volatile size_t free;
     bool full;
 } circular_buf;
 
@@ -23,5 +24,6 @@ extern circular_buf buffer0;
 
 uint8_t read_buffer(circular_buf * );
 uint8_t check_buffer(circular_buf * );
+void init_buffer(circular_buf * );
 
 #endif
