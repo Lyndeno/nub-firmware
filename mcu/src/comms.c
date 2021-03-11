@@ -3,7 +3,7 @@
 #include "comms.h"
 #include "io.h"
 
-ISR(USART0_RX_vect) {
+ISR(WIFI_RX_vect) {
     // when interrupt is triggered then write UDR into buffer so we do not lose information
     buff_wifi_rx.buff[buff_wifi_rx.tail++] = UDR0;
     buff_wifi_rx.free--;
