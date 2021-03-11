@@ -72,6 +72,10 @@ void check_frame (circular_buf *buffer_ptr) {
                     break;
                 case 0x02: // New device (dis)connected
                     break;
+                case 0x03: // NUB topology adjustment
+                    break;
+                case 0x04: // Acknowledgements
+                    break;
             }
         }
     }
