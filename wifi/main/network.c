@@ -16,10 +16,6 @@ const char *TAG = "NUB WiFi";
 
 #define UDP_PORT 3333
 
-static EventGroupHandle_t wifi_event_group;
-
-const int WIFI_CONNECTED_BIT = BIT0;
-
 static esp_err_t event_handler(void *ctx, system_event_t *event) {
 
     switch(event->event_id) {
@@ -44,8 +40,6 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
 }
 
 void wifi_init_softap() {
-    wifi_event_group = xEventGroupCreate();
-
     tcpip_adapter_init();
     ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
 
