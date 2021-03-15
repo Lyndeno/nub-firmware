@@ -21,8 +21,6 @@ static EventGroupHandle_t wifi_event_group;
 const int WIFI_CONNECTED_BIT = BIT0;
 
 static esp_err_t event_handler(void *ctx, system_event_t *event) {
-    /* For accessing reason codes in case of disconnection */
-    system_event_info_t *info = &event->event_info;
 
     switch(event->event_id) {
     case SYSTEM_EVENT_AP_STACONNECTED:
