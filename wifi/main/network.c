@@ -19,17 +19,17 @@ const char *TAG = "NUB WiFi";
 static esp_err_t event_handler(void *ctx, system_event_t *event) {
 
     switch(event->event_id) {
-    case SYSTEM_EVENT_AP_STACONNECTED:
+    case SYSTEM_EVENT_AP_STACONNECTED: // Client connects
         ESP_LOGI(TAG, "station:"MACSTR" join, AID=%d",
                  MAC2STR(event->event_info.sta_connected.mac),
                  event->event_info.sta_connected.aid);
         break;
-    case SYSTEM_EVENT_AP_STADISCONNECTED:
+    case SYSTEM_EVENT_AP_STADISCONNECTED: // Client disconnects
         ESP_LOGI(TAG, "station:"MACSTR"leave, AID=%d",
                  MAC2STR(event->event_info.sta_disconnected.mac),
                  event->event_info.sta_disconnected.aid);
         break;
-    case SYSTEM_EVENT_AP_STAIPASSIGNED:
+    case SYSTEM_EVENT_AP_STAIPASSIGNED: // Client is assigned an IP address
         ESP_LOGI(TAG, "assigned ip:%s",
                  ip4addr_ntoa(&event->event_info.ap_staipassigned.ip));
         break;
@@ -80,7 +80,7 @@ void udp_server_task(void *pvParameters) {
         destAddr.sin_family = AF_INET;
         destAddr.sin_port = htons(UDP_PORT);
         addr_family = AF_INET;
-        ip_protocol = IPPROTO_IP;
+        ip_protocol = IPPROTO_IP; // IPV4
         inet_ntoa_r(destAddr.sin_addr, addr_str, sizeof(addr_str) - 1);
 
         int sock = socket(addr_family, SOCK_DGRAM, ip_protocol);
