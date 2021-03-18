@@ -1,10 +1,10 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 
-extern QueueHandle_t uart_rx_bytes; // bytes received from UART
-extern QueueHandle_t uart_tx_bytes; // bytes to send through UART
-extern QueueHandle_t wifi_rx_frames; // frame of bytes received from WiFi
-extern QueueHandle_t wifi_tx_frames; // frame of bytes to send through WiFI
+extern QueueHandle_t q_uart_rx_bytes; // bytes received from UART
+extern QueueHandle_t q_uart_tx_bytes; // bytes to send through UART
+extern QueueHandle_t q_wifi_rx_frames; // frame of bytes received from WiFi
+extern QueueHandle_t q_wifi_tx_frames; // frame of bytes to send through WiFI
 
 // Simple message frame
 typedef struct message_frame {
