@@ -4,7 +4,7 @@
 #include "freertos/queue.h"
 #include "routing.h"
 
-static QueueHandle_t s_uart0Queue;
+//static QueueHandle_t s_uart0Queue;
 
 void UART_init (void) {
     uart_config_t uart_config = {
@@ -17,7 +17,7 @@ void UART_init (void) {
 
     uart_param_config(UART_NUM_0, &uart_config);
 
-    uart_driver_install(UART_NUM_0, BUF_SIZE * 2, BUF_SIZE * 2, 100, &s_uart0Queue, 0);
+    uart_driver_install(UART_NUM_0, BUF_SIZE * 2, BUF_SIZE * 2, 0, NULL, 0);
 
     q_uart_rx_bytes = xQueueCreate(256, sizeof(uint8_t));
     q_uart_tx_bytes = xQueueCreate(256, sizeof(uint8_t));
