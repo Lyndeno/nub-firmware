@@ -11,3 +11,6 @@ typedef struct message_frame {
     uint8_t *data;
     size_t len;
 } message_frame;
+
+void tx_byte(uint8_t);
+void rx_byte(uint8_t * );
