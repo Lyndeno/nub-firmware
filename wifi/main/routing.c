@@ -54,7 +54,7 @@ void message_to_bytes_task (void *pvParameters) {
             tx_byte(((uint16_t)rx_frame.len) & 0x00FF); // second byte of length
 
             // send message to uart queue
-            for (size_t i; i < rx_frame.len; i++) {
+            for (size_t i = 0; i < rx_frame.len; i++) {
                 tx_byte(rx_frame.data[i]);
             }
         }
