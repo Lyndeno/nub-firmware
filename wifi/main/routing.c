@@ -1,6 +1,11 @@
 #include "routing.h"
 #include "freertos/task.h"
 
+QueueHandle_t q_uart_rx_bytes; // bytes received from UART
+QueueHandle_t q_uart_tx_bytes; // bytes to send through UART
+QueueHandle_t q_wifi_rx_frames; // frame of bytes received from WiFi
+QueueHandle_t q_wifi_tx_frames; // frame of bytes to send through WiFI
+
 const TickType_t block_time = pdMS_TO_TICKS( 1000 );
 
 void bytes_to_message_task (void *pvParamters) {
