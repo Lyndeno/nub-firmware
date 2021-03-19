@@ -62,9 +62,9 @@ void message_to_bytes_task (void *pvParameters) {
 }
 
 void tx_byte(uint8_t byte) {
-    while( xQueueSendToBack(q_wifi_tx_frames, &byte, block_time) != 1);
+    while( xQueueSendToBack(q_uart_tx_bytes, &byte, block_time) != 1);
 }
 
 void rx_byte(uint8_t *byte_addr) {
-    while( xQueueReceive(q_wifi_tx_frames, byte_addr, block_time) != 1);
+    while( xQueueReceive(q_uart_rx_bytes, byte_addr, block_time) != 1);
 }
