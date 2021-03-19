@@ -1,10 +1,12 @@
 #include "routing.h"
 #include "freertos/task.h"
 
+const TickType_t block_time = pdMS_TO_TICKS( 1000 );
+
 void bytes_to_message_task (void *pvParamters) {
     uint8_t temp_rx;
     uint16_t mess_len;
-    const TickType_t block_time = pdMS_TO_TICKS( 1000 );
+    
 
     for(;;) {
         if( xQueueReceive(q_uart_rx_bytes, &temp_rx, block_time)) { // TODO: Maybe change this to a while loop for cleanliness
@@ -34,6 +36,26 @@ void bytes_to_message_task (void *pvParamters) {
 
     vTaskDelete(NULL);
 }
+
+void message_to_bytes_task (void *pvParameters) {
+    message_frame rx_frame;
+
+    for(;;) {
+        if( xQueueReceive(q_wifi_rx_frames, &rx_frame, block_time) != 1) {
+            tx_byte(0x02); // NUB header
+            tx_byte(0x00); // data len
+            tx_byte(0x01); // msg type
+            tx_byte(((uint16_t)rx_frame.len) >> 8); // first byte of length
+            tx_byte(((uint16_t)rx_frame.len) & 0x00FF); // second byte of length
+
+            // send message to uart queue
+            for (size_t i; i < rx_frame.len; i++) {
+                tx_byte(rx_frame.data[i]);
+            }
+        }
+    }
+}
+
 void tx_byte(uint8_t byte) {
     while( xQueueSendToBack(q_wifi_tx_frames, &byte, block_time) != 1);
 }
