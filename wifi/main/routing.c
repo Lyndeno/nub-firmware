@@ -8,7 +8,7 @@ void bytes_to_message_task (void *pvParamters) {
     uint16_t mess_len;
     
 
-    for(;;) {
+    while (1) {
         if( xQueueReceive(q_uart_rx_bytes, &temp_rx, block_time)) { // TODO: Maybe change this to a while loop for cleanliness
             if ( temp_rx == 0x02 ) { // Check for beginning of NUB data frame
                 while ( (xQueueReceive(q_uart_rx_bytes, &temp_rx, block_time)) != 1); // wait for data_len byte
@@ -40,7 +40,7 @@ void bytes_to_message_task (void *pvParamters) {
 void message_to_bytes_task (void *pvParameters) {
     message_frame rx_frame;
 
-    for(;;) {
+    while (1) {
         if( xQueueReceive(q_wifi_rx_frames, &rx_frame, block_time) != 1) {
             tx_byte(0x02); // NUB header
             tx_byte(0x00); // data len
