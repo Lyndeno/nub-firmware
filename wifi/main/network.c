@@ -9,6 +9,7 @@
 #include "lwip/sockets.h"
 
 const char *TAG = "NUB WiFi";
+int sock;
 
 #define ESP_WIFI_SSID "NUB"
 #define ESP_WIFI_PASS "capstone1234"
@@ -67,10 +68,44 @@ void wifi_init_softap() {
     ESP_LOGI( TAG, "wifi_init_softap finished. SSID: %s password: %s", ESP_WIFI_SSID, ESP_WIFI_PASS);
 }
 
-// use code from sdk example and adapt
-void udp_server_task(void *pvParameters) {
+void udp_recv_task(void *pvParameters) {
     char rx_buffer[128]; // perhaps use buffer struct from mcu code for this
     char addr_str[128];
+    ESP_LOGI(TAG, "Waiting for data");
+
+    while (1) {
+        struct sockaddr_in sourceAddr;
+
+        socklen_t socklen = sizeof(sourceAddr);
+        int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0, (struct sockaddr *)&sourceAddr, &socklen);
+
+        // Error occured during receiving
+        if (len < 0) {
+            ESP_LOGE(TAG, "recvfrom failed: errno %d", errno);
+            //break;
+        }
+        // Data received
+        else {
+            // Get the sender's ip address as string
+            inet_ntoa_r(((struct sockaddr_in *)&sourceAddr)->sin_addr.s_addr, addr_str, sizeof(addr_str) - 1);
+
+            rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string...
+            ESP_LOGI(TAG, "Received %d bytes from %s:", len, addr_str);
+            ESP_LOGI(TAG, "%s", rx_buffer);
+
+            int err = sendto(sock, rx_buffer, len, 0, (struct sockaddr *)&sourceAddr, sizeof(sourceAddr));
+            if (err < 0) {
+                ESP_LOGE(TAG, "Error occured during sending: errno %d", errno);
+                //break;
+            }
+        }
+    }
+}
+
+// use code from sdk example and adapt
+void udp_server_task(void *pvParameters) {
+    
+    
     int addr_family;
     int ip_protocol;
 
@@ -81,9 +116,9 @@ void udp_server_task(void *pvParameters) {
         destAddr.sin_port = htons(UDP_PORT);
         addr_family = AF_INET;
         ip_protocol = IPPROTO_IP; // IPV4
-        inet_ntoa_r(destAddr.sin_addr, addr_str, sizeof(addr_str) - 1);
+        //inet_ntoa_r(destAddr.sin_addr, addr_str, sizeof(addr_str) - 1);
 
-        int sock = socket(addr_family, SOCK_DGRAM, ip_protocol);
+        sock = socket(addr_family, SOCK_DGRAM, ip_protocol);
         if (sock < 0) {
             ESP_LOGE(TAG, "Unable to create socket: errno %d", errno);
             break;
@@ -95,35 +130,10 @@ void udp_server_task(void *pvParameters) {
             ESP_LOGE(TAG, "Socket unable to bind: errno %d", errno);
         }
         ESP_LOGI(TAG, "Socket binded");
+        xTaskCreate(udp_recv_task, "udp_receive", 4096, NULL, 5, NULL);
 
         while (1) {
-            ESP_LOGI(TAG, "Waiting for data");
-
-            struct sockaddr_in sourceAddr;
-
-            socklen_t socklen = sizeof(sourceAddr);
-            int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0, (struct sockaddr *)&sourceAddr, &socklen);
-
-            // Error occured during receiving
-            if (len < 0) {
-                ESP_LOGE(TAG, "recvfrom failed: errno %d", errno);
-                break;
-            }
-            // Data received
-            else {
-                // Get the sender's ip address as string
-                inet_ntoa_r(((struct sockaddr_in *)&sourceAddr)->sin_addr.s_addr, addr_str, sizeof(addr_str) - 1);
-
-                rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string...
-                ESP_LOGI(TAG, "Received %d bytes from %s:", len, addr_str);
-                ESP_LOGI(TAG, "%s", rx_buffer);
-
-                int err = sendto(sock, rx_buffer, len, 0, (struct sockaddr *)&sourceAddr, sizeof(sourceAddr));
-                if (err < 0) {
-                    ESP_LOGE(TAG, "Error occured during sending: errno %d", errno);
-                    break;
-                }
-            }
+            
         }
 
         if (sock != -1) {
