@@ -25,7 +25,7 @@ static void uartEventTask(void *pvParameters) {
 }*/
 
 void app_main() {
-    UART_init();
+    //UART_init();
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
         ESP_ERROR_CHECK(nvs_flash_erase());
@@ -41,7 +41,7 @@ void app_main() {
     while (1)
     {
         vTaskDelay(2000 / portTICK_PERIOD_MS);
-        uart_write_bytes(UART_NUM_0, "Hello there\r\n", 13);
+        //uart_write_bytes(UART_NUM_0, "Hello there\r\n", 13);
     }
     
 }
