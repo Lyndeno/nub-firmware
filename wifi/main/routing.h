@@ -1,3 +1,6 @@
+#ifndef ROUTING_H
+#define ROUTING_H
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "lwip/inet.h"
@@ -17,3 +20,5 @@ typedef struct message_frame {
 
 void tx_byte(uint8_t);
 void rx_byte(uint8_t * );
+
+#endif
