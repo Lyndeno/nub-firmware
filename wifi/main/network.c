@@ -5,6 +5,7 @@
 #include "esp_log.h"
 #include "esp_event_loop.h"
 #include <string.h>
+#include "routing.h"
 
 #include "lwip/sockets.h"
 
@@ -69,15 +70,19 @@ void wifi_init_softap() {
 }
 
 void udp_recv_task(void *pvParameters) {
-    char rx_buffer[128]; // perhaps use buffer struct from mcu code for this
+    //char rx_buffer[128]; // perhaps use buffer struct from mcu code for this
     char addr_str[128];
-    ESP_LOGI(TAG, "Waiting for data");
+    
 
     while (1) {
+        message_frame rx_frame;
+        char *rx_buffer;
+        rx_buffer = pvPortMalloc(128*sizeof(char));
+        ESP_LOGI(TAG, "Waiting for data");
         struct sockaddr_in sourceAddr;
 
         socklen_t socklen = sizeof(sourceAddr);
-        int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0, (struct sockaddr *)&sourceAddr, &socklen);
+        int len = recvfrom(sock, rx_buffer, 128*sizeof(char) - 1, 0, (struct sockaddr *)&sourceAddr, &socklen);
 
         // Error occured during receiving
         if (len < 0) {
@@ -89,22 +94,49 @@ void udp_recv_task(void *pvParameters) {
             // Get the sender's ip address as string
             inet_ntoa_r(((struct sockaddr_in *)&sourceAddr)->sin_addr.s_addr, addr_str, sizeof(addr_str) - 1);
 
-            rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string...
+            rx_buffer[len] = 0;
+            rx_frame.data = (uint8_t *)rx_buffer;
+            rx_frame.len = len;
+            rx_frame.devaddr = sourceAddr;
+            //rx_frame.ip_addr = sourceAddr.sin_addr.s_addr;
+            //rx_frame.port = sourceAddr.sin_port;
+
+            xQueueSendToBack(q_wifi_tx_frames, (void *)&rx_frame, pdMS_TO_TICKS( 1000 ));
+
+            //rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string...
             ESP_LOGI(TAG, "Received %d bytes from %s:", len, addr_str);
             ESP_LOGI(TAG, "%s", rx_buffer);
 
-            int err = sendto(sock, rx_buffer, len, 0, (struct sockaddr *)&sourceAddr, sizeof(sourceAddr));
+            /*int err = sendto(sock, rx_buffer, len, 0, (struct sockaddr *)&sourceAddr, sizeof(sourceAddr));
             if (err < 0) {
                 ESP_LOGE(TAG, "Error occured during sending: errno %d", errno);
                 //break;
-            }
+            }*/
+        }
+    }
+}
+
+void udp_trans_task(void *pvParameters) {
+    message_frame tx_frame;
+    struct sockaddr_in destAddr;
+    //socklen_t socklen = sizeof(destAddr);
+    while (1) {
+        if (xQueueReceive(q_wifi_tx_frames, &tx_frame, portMAX_DELAY)) {
+            ESP_LOGI(TAG, "Sending String: %s", tx_frame.data);
+            //destAddr.sin_addr.s_addr = tx_frame.ip_addr;
+            //destAddr.sin_port = tx_frame.port;
+            destAddr = tx_frame.devaddr;
+            sendto(sock, tx_frame.data, tx_frame.len, 0, (struct sockaddr *)&destAddr, sizeof(destAddr));
+            vPortFree(tx_frame.data);
         }
     }
 }
 
 // use code from sdk example and adapt
 void udp_server_task(void *pvParameters) {
-    
+    q_wifi_rx_frames = xQueueCreate(256, sizeof(message_frame));
+    q_wifi_tx_frames = xQueueCreate(256, sizeof(message_frame));
+       
     
     int addr_family;
     int ip_protocol;
@@ -131,9 +163,10 @@ void udp_server_task(void *pvParameters) {
         }
         ESP_LOGI(TAG, "Socket binded");
         xTaskCreate(udp_recv_task, "udp_receive", 4096, NULL, 5, NULL);
+        xTaskCreate(udp_trans_task, "udp_transmit", 4096, NULL, 5, NULL);
 
         while (1) {
-            
+            vTaskDelay(2000 / portTICK_PERIOD_MS);
         }
 
         if (sock != -1) {
