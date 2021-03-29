@@ -8,7 +8,7 @@ QueueHandle_t q_wifi_tx_frames = NULL; // frame of bytes to send through WiFI
 
 const TickType_t block_time = pdMS_TO_TICKS( 1000 );
 
-void bytes_to_message_task (void *pvParamters) {
+void handle_bytes_task (void *pvParamters) {
     uint8_t temp_rx;
     uint16_t mess_len;
     
@@ -42,7 +42,7 @@ void bytes_to_message_task (void *pvParamters) {
     vTaskDelete(NULL);
 }
 
-void message_to_bytes_task (void *pvParameters) {
+void handle_frames_task (void *pvParameters) {
     message_frame rx_frame;
 
     while (1) {
