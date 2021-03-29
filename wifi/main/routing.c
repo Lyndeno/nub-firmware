@@ -47,18 +47,51 @@ void handle_frames_task (void *pvParameters) {
 
     while (1) {
         if( xQueueReceive(q_wifi_rx_frames, &rx_frame, block_time) != 1) {
-            tx_byte(0x02); // NUB header
-            tx_byte(0x00); // data len
-            tx_byte(0x01); // msg type
-            tx_byte(((uint16_t)rx_frame.len) >> 8); // first byte of length
-            tx_byte(((uint16_t)rx_frame.len) & 0x00FF); // second byte of length
+            /*
+             * TODO: Move this documentation elsewhere
+             * Frame Data for transmission between WiFi device and ESP:
+             * 
+             * First Byte: message type
+             *  - 0x01 for standard message
+             *  - 0x02 for device (dis)connect from NUB (only received if device manually disconnects, handle WiFi disconnection from WiFi event handler)
+             * 
+             * For device (dis)connection:
+             *  - Second byte, 0x01 for connect, 0x02 for disconnect
+             *  - Next six bytes: MAC address of device in question
+             */ 
+            switch (rx_frame.data[1])
+            {
+            case 0x01: // Standard message
+                handle_message_frame(&rx_frame);
+                break;
 
-            // send message to uart queue
-            for (size_t i = 0; i < rx_frame.len; i++) {
-                tx_byte(rx_frame.data[i]);
+            case 0x02: // device connect/disconnected
+
+                break;
+            
+            default:
+                break;
             }
         }
     }
+}
+
+void handle_message_frame (message_frame *rx_frame) {
+    tx_byte(0x02); // NUB header
+    tx_byte(0x00); // data len
+    tx_byte(0x01); // msg type
+    tx_byte(((uint16_t)(rx_frame->len)) >> 8); // first byte of length
+    tx_byte(((uint16_t)(rx_frame->len)) & 0x00FF); // second byte of length
+
+    // send message to uart queue
+    for (size_t i = 0; i < rx_frame->len; i++) {
+        tx_byte(rx_frame->data[i]);
+    }
+}
+
+// Add/remove device from table and report to MCU
+void handle_device_table (message_frame *frame) {
+
 }
 
 void tx_byte(uint8_t byte) {
