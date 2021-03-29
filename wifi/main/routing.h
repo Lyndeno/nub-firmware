@@ -4,6 +4,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "lwip/sockets.h"
+#include "network.h"
+#include <stdbool.h>
 //#include "lwip/inet.h"
 
 
@@ -25,6 +27,11 @@ typedef struct wifi_device {
     uint8_t mac[6];
     struct sockaddr_in netaddr;
 } wifi_device;
+
+typedef struct wifi_table {
+    wifi_device device[ESP_WIFI_MAX_CONN];
+    bool occupied[ESP_WIFI_MAX_CONN]; 
+} wifi_table;
 
 void tx_byte(uint8_t);
 void rx_byte(uint8_t * );
