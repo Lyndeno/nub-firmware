@@ -14,7 +14,7 @@ int sock;
 
 #define ESP_WIFI_SSID "NUB"
 #define ESP_WIFI_PASS "capstone1234"
-#define ESP_WIFI_MAX_CONN 4
+
 
 #define UDP_PORT 3333
 
