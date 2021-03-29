@@ -21,6 +21,11 @@ typedef struct message_frame {
     struct sockaddr_in devaddr;
 } message_frame;
 
+typedef struct wifi_device {
+    uint8_t mac[6];
+    struct sockaddr_in netaddr;
+} wifi_device;
+
 void tx_byte(uint8_t);
 void rx_byte(uint8_t * );
 
