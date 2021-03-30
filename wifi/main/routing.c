@@ -5,6 +5,9 @@ QueueHandle_t q_uart_rx_bytes = NULL; // bytes received from UART
 QueueHandle_t q_uart_tx_bytes = NULL; // bytes to send through UART
 QueueHandle_t q_wifi_rx_frames = NULL; // frame of bytes received from WiFi
 QueueHandle_t q_wifi_tx_frames = NULL; // frame of bytes to send through WiFI
+QueueHandle_t q_wifi_state = NULL;
+
+static wifi_device wifi_connection_table[ESP_WIFI_MAX_CONN]; // hold the information for currently connected devices
 
 const TickType_t block_time = pdMS_TO_TICKS( 1000 );
 
@@ -90,8 +93,62 @@ void handle_message_frame (message_frame *rx_frame) {
 }
 
 // Add/remove device from table and report to MCU
-void handle_device_table (message_frame *frame) {
+void device_table_task (void *pvParameters) {
+    q_wifi_state = xQueueCreate(32, sizeof(wifi_device));
+    wifi_device new_state;
 
+    // initialize the device table
+    for (size_t i = 0; i < ESP_WIFI_MAX_CONN; i++) {
+        wifi_connection_table[i].state = Disconnected;
+        wifi_connection_table[i].mac = pvPortMalloc(MAC_LENGTH * sizeof(uint8_t));
+    }
+
+    while (1) {
+        if (xQueueReceive(q_wifi_state, &new_state, portMAX_DELAY)) {
+            switch (new_state.state)
+            {
+            case Connected:
+                /*
+                 * TODO: Add handling for duplicate connection notices, i.e. same device sends connection frame twice.
+                 * To prevent the table from filling up.
+                 */ 
+                for (size_t dev_index = 0; dev_index < ESP_WIFI_MAX_CONN; dev_index++) {
+                    if (wifi_connection_table[dev_index].state == Disconnected) {
+                        copy_MAC(new_state.mac,wifi_connection_table[dev_index].mac);
+                        wifi_connection_table[dev_index].netaddr = new_state.netaddr;
+                        wifi_connection_table[dev_index].state = Connected;
+                    }
+                }
+                break;
+
+            case Disconnected:
+                for (size_t dev_index = 0; dev_index < ESP_WIFI_MAX_CONN; dev_index++) {
+                    if (compare_MAC( wifi_connection_table[dev_index].mac, new_state.mac )) {
+                        wifi_connection_table[dev_index].state = Disconnected;
+                    }
+                }
+                break;
+            
+            default:
+                break;
+            }
+        }
+    }
+}
+
+bool compare_MAC (uint8_t *mac1, uint8_t *mac2) {
+    bool match = true;
+    for (size_t mac_index = 0; mac_index < MAC_LENGTH; mac_index++) {
+        match = mac1[mac_index] == mac2[mac_index];
+        if (!match) {break;}
+    }
+    return match;
+}
+
+void copy_MAC (uint8_t *mac_in, uint8_t *mac_out) {
+    for (size_t mac_index = 0; mac_index < MAC_LENGTH; mac_index++) {
+        mac_out[mac_index] = mac_in[mac_index];
+    }
 }
 
 void tx_byte(uint8_t byte) {

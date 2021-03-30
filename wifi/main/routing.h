@@ -6,13 +6,21 @@
 #include "lwip/sockets.h"
 #include "network.h"
 #include <stdbool.h>
-//#include "lwip/inet.h"
+#include "lwip/inet.h"
+
+#define MAC_LENGTH 6
 
 
 extern QueueHandle_t q_uart_rx_bytes; // bytes received from UART
 extern QueueHandle_t q_uart_tx_bytes; // bytes to send through UART
 extern QueueHandle_t q_wifi_rx_frames; // frame of bytes received from WiFi
 extern QueueHandle_t q_wifi_tx_frames; // frame of bytes to send through WiFI
+extern QueueHandle_t q_wifi_state; // queue to update device table when a device connects or disconnects
+
+typedef enum connection_state {
+    Connected, 
+    Disconnected
+} connection_state;
 
 // Simple message frame
 typedef struct message_frame {
@@ -24,16 +32,28 @@ typedef struct message_frame {
 } message_frame;
 
 typedef struct wifi_device {
-    uint8_t mac[6];
+    uint8_t *mac;
     struct sockaddr_in netaddr;
+    connection_state state;
 } wifi_device;
 
+/*
+typedef struct wifi_state {
+    uint8_t mac[MAC_LENGTH];
+    connection_state state;
+} wifi_state;
+*/
+/*
 typedef struct wifi_table {
     wifi_device device[ESP_WIFI_MAX_CONN];
     bool occupied[ESP_WIFI_MAX_CONN]; 
 } wifi_table;
+*/
 
 void tx_byte(uint8_t);
 void rx_byte(uint8_t * );
+void handle_message_frame (message_frame * );
+bool compare_MAC (uint8_t * , uint8_t * );
+void copy_MAC (uint8_t * , uint8_t * );
 
 #endif
