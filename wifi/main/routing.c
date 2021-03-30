@@ -71,9 +71,6 @@ void handle_frames_task (void *pvParameters) {
             case 0x02: // device connect/disconnected
 
                 break;
-            
-            default:
-                break;
             }
         }
     }
@@ -127,9 +124,6 @@ void device_table_task (void *pvParameters) {
                         wifi_connection_table[dev_index].state = Disconnected;
                     }
                 }
-                break;
-            
-            default:
                 break;
             }
         }
