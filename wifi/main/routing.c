@@ -126,6 +126,7 @@ void device_table_task (void *pvParameters) {
                 }
                 break;
             }
+            vPortFree(new_state.mac);
         }
     }
 }
