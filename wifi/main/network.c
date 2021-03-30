@@ -30,6 +30,13 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
         ESP_LOGI(TAG, "station:"MACSTR"leave, AID=%d",
                  MAC2STR(event->event_info.sta_disconnected.mac),
                  event->event_info.sta_disconnected.aid);
+
+        // Remove device from device table
+        wifi_device disconn_device;
+        disconn_device.mac = pvPortMalloc(MAC_LENGTH * sizeof(uint8_t));
+        disconn_device.state = Disconnected;
+        copy_MAC(event->event_info.sta_disconnected.mac, disconn_device.mac);
+        xQueueSendToBack(q_wifi_state, &disconn_device, portMAX_DELAY);
         break;
     case SYSTEM_EVENT_AP_STAIPASSIGNED: // Client is assigned an IP address
         ESP_LOGI(TAG, "assigned ip:%s",
