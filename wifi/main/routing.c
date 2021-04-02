@@ -69,26 +69,7 @@ void handle_frames_task (void *pvParameters) {
                 }
 
                 case 0x02: {// device connect/disconnected 
-                    wifi_device mod_device;
-                    mod_device.mac = (uint8_t *)pvPortMalloc(MAC_LENGTH * sizeof(uint8_t));
-                    copy_MAC(&(rx_frame.data[2]), mod_device.mac);
-                    switch (rx_frame.data[1]) {
-                        case 0x01: { // Connect
-                            mod_device.netaddr = rx_frame.devaddr;
-                            mod_device.state = Connected;
-                            xQueueSendToBack(q_wifi_state, &mod_device, portMAX_DELAY);
-                            break;
-                        }
-                        case 0x02: { // Disconnect
-                            mod_device.state = Disconnected;
-                            xQueueSendToBack(q_wifi_state, &mod_device, portMAX_DELAY);
-                            break;
-                        }
-                        default: { // Invalid
-                            vPortFree(mod_device.mac);
-                            break;
-                        }
-                    }
+                    handle_connection_frame(&rx_frame);
                     break;
                 }
             }
@@ -106,6 +87,29 @@ void handle_message_frame (message_frame *rx_frame) {
     // send message to uart queue
     for (size_t i = 0; i < rx_frame->len; i++) {
         tx_byte(rx_frame->data[i]);
+    }
+}
+
+void handle_connection_frame (message_frame *rx_frame) {
+    wifi_device mod_device;
+    mod_device.mac = (uint8_t *)pvPortMalloc(MAC_LENGTH * sizeof(uint8_t));
+    copy_MAC(&(rx_frame->data[2]), mod_device.mac);
+    switch (rx_frame->data[1]) {
+        case 0x01: { // Connect
+            mod_device.netaddr = rx_frame->devaddr;
+            mod_device.state = Connected;
+            xQueueSendToBack(q_wifi_state, &mod_device, portMAX_DELAY);
+            break;
+        }
+        case 0x02: { // Disconnect
+            mod_device.state = Disconnected;
+            xQueueSendToBack(q_wifi_state, &mod_device, portMAX_DELAY);
+            break;
+        }
+        default: { // Invalid
+            vPortFree(mod_device.mac);
+            break;
+        }
     }
 }
 
