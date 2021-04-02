@@ -32,9 +32,9 @@ void UART_rx_task (void *pvParameters) {
 
     while (1) {
         // Read Data
-        size_t len = uart_read_bytes(UART_NUM_0, rx_buff, BUF_SIZE, 20 / portTICK_RATE_MS);
+        size_t len = uart_read_bytes(UART_NUM_0, rx_buff, BUF_SIZE, portMAX_DELAY);
         for (size_t i = 0; i < len; i++) {
-            while (xQueueSendToBack(q_uart_rx_bytes, &rx_buff[i], 20 / portTICK_RATE_MS) != 1);
+            while (xQueueSendToBack(q_uart_rx_bytes, &rx_buff[i], portMAX_DELAY) != 1);
         }
     }
 }
@@ -43,7 +43,7 @@ void UART_tx_task (void *pvParameters) {
     uint8_t tempChar;
 
     while (1) {
-        if (xQueueReceive(q_uart_tx_bytes, &tempChar, 20 / portTICK_RATE_MS)) {
+        if (xQueueReceive(q_uart_tx_bytes, &tempChar, portMAX_DELAY)) {
             uart_write_bytes(UART_NUM_0, (const char *) &tempChar, 1);
         }
     }
