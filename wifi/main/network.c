@@ -78,9 +78,6 @@ void wifi_init_softap(void) {
 }
 
 void udp_server_init(void) {
-    q_wifi_rx_frames = xQueueCreate(256, sizeof(message_frame));
-    q_wifi_tx_frames = xQueueCreate(256, sizeof(message_frame));
-
     xTaskCreate(udp_server_task, "udp_server", 4096, NULL, 5, NULL);
 }
 

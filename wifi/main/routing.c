@@ -12,6 +12,10 @@ static wifi_device wifi_connection_table[ESP_WIFI_MAX_CONN]; // hold the informa
 const TickType_t block_time = portMAX_DELAY;//pdMS_TO_TICKS( 1000 );
 
 void route_init(void) {
+    q_wifi_rx_frames = xQueueCreate(256, sizeof(message_frame));
+    q_wifi_tx_frames = xQueueCreate(256, sizeof(message_frame));
+    q_uart_rx_bytes = xQueueCreate(256, sizeof(uint8_t));
+    q_uart_tx_bytes = xQueueCreate(256, sizeof(uint8_t));
     xTaskCreate(handle_bytes_task, "handle_bytes_task", 256, NULL, 5, NULL);
     xTaskCreate(handle_frames_task, "handle_bytes_task", 256, NULL, 5, NULL);
     xTaskCreate(device_table_task, "handle_bytes_task", 256, NULL, 5, NULL);
@@ -56,7 +60,7 @@ void handle_frames_task (void *pvParameters) {
     message_frame rx_frame;
 
     while (1) {
-        if( xQueueReceive(q_wifi_rx_frames, &rx_frame, block_time) != 1) {
+        if( xQueueReceive(q_wifi_rx_frames, &rx_frame, block_time)) {
             /*
              * TODO: Move this documentation elsewhere
              * Frame Data for transmission between WiFi device and ESP:
@@ -85,11 +89,11 @@ void handle_frames_task (void *pvParameters) {
 }
 
 void handle_message_frame (message_frame *rx_frame) {
-    tx_byte(0x02); // NUB header
-    tx_byte(0x00); // data len
-    tx_byte(0x01); // msg type
-    tx_byte(((uint16_t)(rx_frame->len)) >> 8); // first byte of length
-    tx_byte(((uint16_t)(rx_frame->len)) & 0x00FF); // second byte of length
+    tx_byte((uint8_t)0x02); // NUB header
+    tx_byte((uint8_t)0x00); // data len
+    tx_byte((uint8_t)0x01); // msg type
+    //tx_byte(((uint16_t)(rx_frame->len)) >> 8); // first byte of length
+    //tx_byte(((uint16_t)(rx_frame->len)) & 0x00FF); // second byte of length
 
     // send message to uart queue
     for (size_t i = 0; i < rx_frame->len; i++) {
@@ -178,7 +182,8 @@ void copy_MAC (uint8_t *mac_in, uint8_t *mac_out) {
 }
 
 void tx_byte(uint8_t byte) {
-    while( xQueueSendToBack(q_uart_tx_bytes, &byte, block_time) != 1);
+    //while( xQueueSendToBack(q_uart_tx_bytes, &byte, block_time) != 1);
+    xQueueSendToBack(q_uart_tx_bytes, &byte, portMAX_DELAY);
 }
 
 void rx_byte(uint8_t *byte_addr) {

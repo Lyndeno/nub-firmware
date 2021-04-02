@@ -34,10 +34,10 @@ void app_main() {
     ESP_ERROR_CHECK(ret);
 
     ESP_LOGI(TAG, "ESP_WIFI_MODE_AP");
-    UART_init();
     wifi_init_softap();
-    udp_server_init();
     route_init();
+    UART_init();
+    udp_server_init();
 
     while (1)
     {
