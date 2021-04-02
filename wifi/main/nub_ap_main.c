@@ -36,8 +36,6 @@ void app_main() {
     ESP_LOGI(TAG, "ESP_WIFI_MODE_AP");
     wifi_init_softap();
 
-    
-
     while (1)
     {
         vTaskDelay(2000 / portTICK_PERIOD_MS);
