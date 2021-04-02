@@ -48,7 +48,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
     return ESP_OK;
 }
 
-void wifi_init_softap() {
+void wifi_init_softap(void) {
     tcpip_adapter_init();
     ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
 
@@ -74,6 +74,13 @@ void wifi_init_softap() {
     ESP_ERROR_CHECK(esp_wifi_start());
 
     ESP_LOGI( TAG, "wifi_init_softap finished. SSID: %s password: %s", ESP_WIFI_SSID, ESP_WIFI_PASS);
+}
+
+void udp_init(void) {
+    q_wifi_rx_frames = xQueueCreate(256, sizeof(message_frame));
+    q_wifi_tx_frames = xQueueCreate(256, sizeof(message_frame));
+
+    xTaskCreate(udp_server_task, "udp_server", 4096, NULL, 5, NULL);
 }
 
 void udp_recv_task(void *pvParameters) {
@@ -141,10 +148,6 @@ void udp_trans_task(void *pvParameters) {
 
 // use code from sdk example and adapt
 void udp_server_task(void *pvParameters) {
-    q_wifi_rx_frames = xQueueCreate(256, sizeof(message_frame));
-    q_wifi_tx_frames = xQueueCreate(256, sizeof(message_frame));
-       
-    
     int addr_family;
     int ip_protocol;
 

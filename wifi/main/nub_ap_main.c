@@ -36,7 +36,7 @@ void app_main() {
     ESP_LOGI(TAG, "ESP_WIFI_MODE_AP");
     wifi_init_softap();
 
-    xTaskCreate(udp_server_task, "udp_server", 4096, NULL, 5, NULL);
+    
 
     while (1)
     {
