@@ -17,6 +17,7 @@ void handle_bytes_task (void *pvParamters) {
     
 
     while (1) {
+        // TODO: Clean up this mess
         if( xQueueReceive(q_uart_rx_bytes, &temp_rx, block_time)) { // TODO: Maybe change this to a while loop for cleanliness
             if ( temp_rx == 0x02 ) { // Check for beginning of NUB data frame
                 while ( (xQueueReceive(q_uart_rx_bytes, &temp_rx, block_time)) != 1); // wait for data_len byte
