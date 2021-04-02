@@ -50,11 +50,11 @@ typedef struct wifi_table {
 } wifi_table;
 */
 
-void tx_byte(uint8_t);
-void rx_byte(uint8_t * );
-void handle_message_frame (message_frame * );
-bool compare_MAC (uint8_t * , uint8_t * );
-void copy_MAC (uint8_t * , uint8_t * );
+void tx_byte(uint8_t byte);
+void rx_byte(uint8_t *byte_addr);
+void handle_message_frame (message_frame *rx_frame);
+bool compare_MAC (uint8_t *mac1, uint8_t *mac2);
+void copy_MAC (uint8_t *mac_in, uint8_t *mac_out);
 void handle_connection_frame (message_frame *rx_frame);
 
 #endif
