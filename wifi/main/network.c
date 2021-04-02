@@ -49,6 +49,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
 }
 
 void wifi_init_softap(void) {
+    q_wifi_state = xQueueCreate(256, sizeof(wifi_device));
     tcpip_adapter_init();
     ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
 
@@ -76,7 +77,7 @@ void wifi_init_softap(void) {
     ESP_LOGI( TAG, "wifi_init_softap finished. SSID: %s password: %s", ESP_WIFI_SSID, ESP_WIFI_PASS);
 }
 
-void udp_init(void) {
+void udp_server_init(void) {
     q_wifi_rx_frames = xQueueCreate(256, sizeof(message_frame));
     q_wifi_tx_frames = xQueueCreate(256, sizeof(message_frame));
 
@@ -115,7 +116,7 @@ void udp_recv_task(void *pvParameters) {
             //rx_frame.ip_addr = sourceAddr.sin_addr.s_addr;
             //rx_frame.port = sourceAddr.sin_port;
 
-            xQueueSendToBack(q_wifi_tx_frames, (void *)&rx_frame, pdMS_TO_TICKS( 1000 ));
+            xQueueSendToBack(q_wifi_rx_frames, (void *)&rx_frame, pdMS_TO_TICKS( 1000 ));
 
             //rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string...
             ESP_LOGI(TAG, "Received %d bytes from %s:", len, addr_str);

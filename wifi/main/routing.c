@@ -9,7 +9,13 @@ QueueHandle_t q_wifi_state = NULL;
 
 static wifi_device wifi_connection_table[ESP_WIFI_MAX_CONN]; // hold the information for currently connected devices
 
-const TickType_t block_time = pdMS_TO_TICKS( 1000 );
+const TickType_t block_time = portMAX_DELAY;//pdMS_TO_TICKS( 1000 );
+
+void route_init(void) {
+    xTaskCreate(handle_bytes_task, "handle_bytes_task", 256, NULL, 5, NULL);
+    xTaskCreate(handle_frames_task, "handle_bytes_task", 256, NULL, 5, NULL);
+    xTaskCreate(device_table_task, "handle_bytes_task", 256, NULL, 5, NULL);
+}
 
 void handle_bytes_task (void *pvParamters) {
     uint8_t temp_rx;

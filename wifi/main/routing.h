@@ -50,6 +50,7 @@ typedef struct wifi_table {
 } wifi_table;
 */
 
+void route_init(void);
 void tx_byte(uint8_t byte);
 void rx_byte(uint8_t *byte_addr);
 void handle_message_frame (message_frame *rx_frame);
