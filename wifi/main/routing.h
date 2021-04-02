@@ -57,4 +57,9 @@ bool compare_MAC (uint8_t *mac1, uint8_t *mac2);
 void copy_MAC (uint8_t *mac_in, uint8_t *mac_out);
 void handle_connection_frame (message_frame *rx_frame);
 
+// tasks
+void handle_bytes_task (void *pvParamters);
+void handle_frames_task (void *pvParameters);
+void device_table_task (void *pvParameters);
+
 #endif
