@@ -55,5 +55,6 @@ void rx_byte(uint8_t * );
 void handle_message_frame (message_frame * );
 bool compare_MAC (uint8_t * , uint8_t * );
 void copy_MAC (uint8_t * , uint8_t * );
+void handle_connection_frame (message_frame *rx_frame);
 
 #endif
