@@ -3,6 +3,7 @@
 #include "driver/uart.h"
 #include "freertos/queue.h"
 #include "routing.h"
+#include "freertos/task.h"
 
 //static QueueHandle_t s_uart0Queue;
 
@@ -22,7 +23,8 @@ void UART_init (void) {
     q_uart_rx_bytes = xQueueCreate(256, sizeof(uint8_t));
     q_uart_tx_bytes = xQueueCreate(256, sizeof(uint8_t));
 
-    //xTaskCreate(uartEventTask, "uartEventTask", 2048, NULL, 12, NULL); //change as needed
+    xTaskCreate(UART_rx_task, "UART_rx_task", 512, NULL, 12, NULL); //change as needed
+    xTaskCreate(UART_tx_task, "UART_tx_task", 512, NULL, 12, NULL);
 }
 
 void UART_rx_task (void *pvParameters) {
