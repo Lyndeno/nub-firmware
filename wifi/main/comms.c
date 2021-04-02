@@ -39,11 +39,12 @@ void UART_rx_task (void *pvParameters) {
 }
 
 void UART_tx_task (void *pvParameters) {
-    uint8_t tempChar;
+    uart_frame tempframe;
 
     while (1) {
-        if (xQueueReceive(q_uart_tx_bytes, &tempChar, portMAX_DELAY)) {
-            uart_write_bytes(UART_NUM_0, (const char *) &tempChar, 1);
+        if (xQueueReceive(q_uart_tx_bytes, &tempframe, portMAX_DELAY)) {
+            uart_write_bytes(UART_NUM_0, (const char *) (tempframe.data), tempframe.len);
+            vPortFree(tempframe.data);
         }
     }
 }

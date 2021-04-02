@@ -15,7 +15,7 @@ void route_init(void) {
     q_wifi_rx_frames = xQueueCreate(256, sizeof(message_frame));
     q_wifi_tx_frames = xQueueCreate(256, sizeof(message_frame));
     q_uart_rx_bytes = xQueueCreate(256, sizeof(uint8_t));
-    q_uart_tx_bytes = xQueueCreate(256, sizeof(uint8_t));
+    q_uart_tx_bytes = xQueueCreate(256, sizeof(uart_frame));
     xTaskCreate(handle_bytes_task, "handle_bytes_task", 256, NULL, 5, NULL);
     xTaskCreate(handle_frames_task, "handle_bytes_task", 256, NULL, 5, NULL);
     xTaskCreate(device_table_task, "handle_bytes_task", 256, NULL, 5, NULL);
@@ -89,16 +89,20 @@ void handle_frames_task (void *pvParameters) {
 }
 
 void handle_message_frame (message_frame *rx_frame) {
-    tx_byte((uint8_t)0x02); // NUB header
-    tx_byte((uint8_t)0x00); // data len
-    tx_byte((uint8_t)0x01); // msg type
-    //tx_byte(((uint16_t)(rx_frame->len)) >> 8); // first byte of length
-    //tx_byte(((uint16_t)(rx_frame->len)) & 0x00FF); // second byte of length
+    uart_frame tx_bytes;
+    tx_bytes.len = rx_frame->len + 5; // 5 bytes before message starts
+    tx_bytes.data = pvPortMalloc(tx_bytes.len * sizeof(uint8_t));
+    tx_bytes.data[0] = 0x02; // NUB header
+    tx_bytes.data[1] = 0x00; // data len
+    tx_bytes.data[2] = 0x01; // msg type
+    tx_bytes.data[3] = (rx_frame->len) >> 8; // first byte of length
+    tx_bytes.data[4] = (rx_frame->len) & 0x00FF; // second byte of length
 
     // send message to uart queue
     for (size_t i = 0; i < rx_frame->len; i++) {
-        tx_byte(rx_frame->data[i]);
+        tx_bytes.data[i + 5] = rx_frame->data[i];
     }
+    xQueueSendToBack(q_uart_tx_bytes, &tx_bytes, portMAX_DELAY);
 }
 
 void handle_connection_frame (message_frame *rx_frame) {
@@ -181,11 +185,6 @@ void copy_MAC (uint8_t *mac_in, uint8_t *mac_out) {
     }
 }
 
-void tx_byte(uint8_t byte) {
-    //while( xQueueSendToBack(q_uart_tx_bytes, &byte, block_time) != 1);
-    xQueueSendToBack(q_uart_tx_bytes, &byte, portMAX_DELAY);
-}
-
-void rx_byte(uint8_t *byte_addr) {
-    while( xQueueReceive(q_uart_rx_bytes, byte_addr, block_time) != 1);
+long rx_byte(uint8_t *byte_addr) {
+    return xQueueReceive(q_uart_rx_bytes, byte_addr, block_time);
 }
