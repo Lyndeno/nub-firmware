@@ -24,31 +24,47 @@ void route_init(void) {
 void handle_bytes_task (void *pvParamters) {
     uint8_t temp_rx;
     uint16_t mess_len;
+    message_frame tx_frame;
+    bool success;
     
 
     while (1) {
+        success = true;
         // TODO: Clean up this mess
-        if( xQueueReceive(q_uart_rx_bytes, &temp_rx, block_time)) { // TODO: Maybe change this to a while loop for cleanliness
-            if ( temp_rx == 0x02 ) { // Check for beginning of NUB data frame
-                while ( (xQueueReceive(q_uart_rx_bytes, &temp_rx, block_time)) != 1); // wait for data_len byte
-                while ( (xQueueReceive(q_uart_rx_bytes, &temp_rx, block_time)) != 1); // wait for message_type byte
+        if ( !rx_byte(&temp_rx) ) continue; // check for first byte
+        if ( temp_rx == 0x02 ) {
+            if ( !rx_byte(&temp_rx) ) continue; // get data_len
+            if ( !rx_byte(&temp_rx) ) continue; // get message type
+            switch (temp_rx) { // Check message type
+                case 0x01: { // Text message
+                    if ( !rx_byte(&temp_rx) ) continue; // get first byte of message length
+                    mess_len = (temp_rx << 8);
+                    if ( !rx_byte(&temp_rx) ) continue; // then get the second byte
+                    mess_len |= temp_rx;
 
-                // Add logic for different message types when needed
-                while ( (xQueueReceive(q_uart_rx_bytes, &temp_rx, block_time)) != 1); // wait for first byte of message length
-                mess_len = (temp_rx << 8);
-                while ( (xQueueReceive(q_uart_rx_bytes, &temp_rx, block_time)) != 1); // wait for second byte of message length
-                mess_len |= temp_rx;
+                    tx_frame.len = mess_len;
+                    tx_frame.data = pvPortMalloc(tx_frame.len * sizeof(uint8_t));
 
-                message_frame tx_frame;
-                tx_frame.data = malloc(mess_len * sizeof(uint8_t));
-                tx_frame.len = mess_len;
-                for (size_t i = 0; i < tx_frame.len; i++) {
-                    // TODO: Might be able to pass the array pointer to xqueuereceive
-                    while ( (xQueueReceive(q_uart_rx_bytes, &temp_rx, block_time)) != 1);
-                    tx_frame.data[i] = temp_rx;
+                    for (size_t i = 0; i < tx_frame.len; i++) {
+                        if ( !rx_byte(&(tx_frame.data[i])) ) {
+                            success = false;
+                            break;
+                        }
+                    }
+
+                    if (!success) {
+                        vPortFree(tx_frame.data);
+                        continue;
+                    } else {
+                        xQueueSendToBack(q_wifi_tx_frames, &tx_frame, portMAX_DELAY);
+                    }
+
+                    break;
                 }
-
-                while(xQueueSendToBack(q_wifi_tx_frames, &tx_frame, block_time) != 1); // send to wifi queue until successful
+                
+                default: {
+                    break;
+                }
             }
         }
     }
