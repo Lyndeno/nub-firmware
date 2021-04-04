@@ -68,7 +68,8 @@ void handle_bytes_task (void *pvParamters) {
                         * 2. Source Address
                         * 3. Message 
                         */
-                        tx_frame.devaddr = get_sock(&(tx_frame.data[5]));
+                        // TODO: get this index right
+                        tx_frame.devaddr = get_sock(tx_frame.data);
 
                         xQueueSendToBack(q_wifi_tx_frames, &tx_frame, portMAX_DELAY);
                     }
