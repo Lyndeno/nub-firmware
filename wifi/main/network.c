@@ -131,12 +131,10 @@ void udp_recv_task(void *pvParameters) {
 void udp_trans_task(void *pvParameters) {
     message_frame tx_frame;
     struct sockaddr_in destAddr;
-    //socklen_t socklen = sizeof(destAddr);
+    
     while (1) {
         if (xQueueReceive(q_wifi_tx_frames, &tx_frame, portMAX_DELAY)) {
-            ESP_LOGI(TAG, "Sending String: %s", tx_frame.data);
-            //destAddr.sin_addr.s_addr = tx_frame.ip_addr;
-            //destAddr.sin_port = tx_frame.port;
+            //ESP_LOGI(TAG, "Sending String: %s", tx_frame.data);
             destAddr = tx_frame.devaddr;
             sendto(sock, tx_frame.data, tx_frame.len, 0, (struct sockaddr *)&destAddr, sizeof(destAddr));
             vPortFree(tx_frame.data);
