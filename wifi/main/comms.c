@@ -27,11 +27,11 @@ void UART_init (void) {
 }
 
 void UART_rx_task (void *pvParameters) {
-    uint8_t *rx_buff = (uint8_t *) malloc(BUF_SIZE * sizeof(uint8_t));
+    uint8_t *rx_buff = (uint8_t *) pvPortMalloc(BUF_SIZE * sizeof(uint8_t));
 
     while (1) {
         // Read Data
-        size_t len = uart_read_bytes(UART_NUM_0, rx_buff, BUF_SIZE, portMAX_DELAY);
+        size_t len = uart_read_bytes(UART_NUM_0, rx_buff, BUF_SIZE, 20 / portTICK_RATE_MS);
         for (size_t i = 0; i < len; i++) {
             while (xQueueSendToBack(q_uart_rx_bytes, &rx_buff[i], portMAX_DELAY) != 1);
         }

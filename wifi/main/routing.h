@@ -56,11 +56,12 @@ typedef struct wifi_table {
 */
 
 void route_init(void);
-long rx_byte(uint8_t *byte_addr);
+//long rx_byte(uint8_t *byte_addr);
 void handle_message_frame (message_frame *rx_frame);
 bool compare_MAC (uint8_t *mac1, uint8_t *mac2);
 void copy_MAC (uint8_t *mac_in, uint8_t *mac_out);
 void handle_connection_frame (message_frame *rx_frame);
+struct sockaddr_in get_sock(uint8_t *mac);
 
 // tasks
 void handle_bytes_task (void *pvParamters);

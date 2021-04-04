@@ -1,6 +1,10 @@
 #include "routing.h"
 #include "freertos/task.h"
 
+//#define rx_byte(x) xQueueReceive(q_uart_rx_bytes, x, 5000 / portTICK_RATE_MS)
+#define rx_byte(x) xQueueReceive(q_uart_rx_bytes, x, portMAX_DELAY)
+
+
 QueueHandle_t q_uart_rx_bytes = NULL; // bytes received from UART
 QueueHandle_t q_uart_tx_bytes = NULL; // bytes to send through UART
 QueueHandle_t q_wifi_rx_frames = NULL; // frame of bytes received from WiFi
@@ -17,8 +21,8 @@ void route_init(void) {
     q_uart_rx_bytes = xQueueCreate(256, sizeof(uint8_t));
     q_uart_tx_bytes = xQueueCreate(256, sizeof(uart_frame));
     xTaskCreate(handle_bytes_task, "handle_bytes_task", 256, NULL, 5, NULL);
-    xTaskCreate(handle_frames_task, "handle_bytes_task", 256, NULL, 5, NULL);
-    xTaskCreate(device_table_task, "handle_bytes_task", 256, NULL, 5, NULL);
+    xTaskCreate(handle_frames_task, "handle_frames_task", 256, NULL, 5, NULL);
+    xTaskCreate(device_table_task, "device_table_task", 256, NULL, 5, NULL);
 }
 
 void handle_bytes_task (void *pvParamters) {
@@ -31,7 +35,7 @@ void handle_bytes_task (void *pvParamters) {
     while (1) {
         success = true;
         // TODO: Clean up this mess
-        if ( !rx_byte(&temp_rx) ) continue; // check for first byte
+        if ( rx_byte(&temp_rx) != pdTRUE ) continue; // check for first byte
         if ( temp_rx == 0x02 ) {
             if ( !rx_byte(&temp_rx) ) continue; // get data_len
             if ( !rx_byte(&temp_rx) ) continue; // get message type
@@ -42,7 +46,8 @@ void handle_bytes_task (void *pvParamters) {
                     if ( !rx_byte(&temp_rx) ) continue; // then get the second byte
                     mess_len |= temp_rx;
 
-                    tx_frame.len = mess_len;
+                    //tx_frame.len = mess_len;
+                    tx_frame.len = 17;
                     tx_frame.data = pvPortMalloc(tx_frame.len * sizeof(uint8_t));
 
                     for (size_t i = 0; i < tx_frame.len; i++) {
@@ -56,8 +61,19 @@ void handle_bytes_task (void *pvParamters) {
                         vPortFree(tx_frame.data);
                         continue;
                     } else {
+                        /*
+                        * Message format:
+                        * After all of the header data, the data that resides in the message bytes is:
+                        * 1. Destination Address
+                        * 2. Source Address
+                        * 3. Message 
+                        */
+                        tx_frame.devaddr = get_sock(&(tx_frame.data[5]));
+
                         xQueueSendToBack(q_wifi_tx_frames, &tx_frame, portMAX_DELAY);
                     }
+
+                    
 
                     break;
                 }
@@ -169,6 +185,7 @@ void device_table_task (void *pvParameters) {
                         copy_MAC(new_state.mac,wifi_connection_table[dev_index].mac);
                         wifi_connection_table[dev_index].netaddr = new_state.netaddr;
                         wifi_connection_table[dev_index].state = Connected;
+                        //break; // TODO: Why does this cause a crash at boot???
                     }
                 }
                 break;
@@ -186,6 +203,18 @@ void device_table_task (void *pvParameters) {
     }
 }
 
+struct sockaddr_in get_sock(uint8_t *mac) {
+    size_t i;
+    for (i = 0; i < ESP_WIFI_MAX_CONN; i++) {
+        if ( compare_MAC(mac, wifi_connection_table[i].mac) && wifi_connection_table[i].state == Connected ) {
+            return wifi_connection_table[i].netaddr;
+        }
+    }
+    return wifi_connection_table[i].netaddr;
+
+    //TODO: Handle no existing devices instead of returning that last one
+}
+
 bool compare_MAC (uint8_t *mac1, uint8_t *mac2) {
     bool match = true;
     for (size_t mac_index = 0; mac_index < MAC_LENGTH; mac_index++) {
@@ -201,6 +230,7 @@ void copy_MAC (uint8_t *mac_in, uint8_t *mac_out) {
     }
 }
 
-long rx_byte(uint8_t *byte_addr) {
-    return xQueueReceive(q_uart_rx_bytes, byte_addr, block_time);
-}
+/*long rx_byte(uint8_t *byte_addr) {
+    return xQueueReceive(q_uart_rx_bytes, byte_addr, portMAX_DELAY);
+
+}*/
