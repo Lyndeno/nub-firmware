@@ -27,10 +27,10 @@ Firmware for NUB(Nodal Hub), a long range mesh messaging system. Capstone Projec
 
 ## To-Do
 
-- [ ] Access point (mostly done)
+- [x] Access point (mostly done)
 - [ ] Communications with Android app
 - [ ] UART communication between MCU and ESP8266
 - [ ] UART communication between MCU and transceiver
-- [ ] Power management (Sleep, power button)
+- [ ] ~~Power management (Sleep, power button)~~ batteries not allowed for project anymore
 - [ ] Status LEDs
 - [ ] Serial output? (For debugging)
