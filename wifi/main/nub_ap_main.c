@@ -17,6 +17,7 @@
 #include "driver/uart.h"
 #include "network.h"
 #include "comms.h"
+#include "routing.h"
 
 /*
 static void uartEventTask(void *pvParameters) {
@@ -25,7 +26,6 @@ static void uartEventTask(void *pvParameters) {
 }*/
 
 void app_main() {
-    UART_init();
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
         ESP_ERROR_CHECK(nvs_flash_erase());
@@ -35,11 +35,14 @@ void app_main() {
 
     ESP_LOGI(TAG, "ESP_WIFI_MODE_AP");
     wifi_init_softap();
+    route_init();
+    UART_init();
+    udp_server_init();
 
     while (1)
     {
         vTaskDelay(2000 / portTICK_PERIOD_MS);
-        uart_write_bytes(UART_NUM_0, "Hello there\r\n", 13);
+        //uart_write_bytes(UART_NUM_0, "Hello there\r\n", 13);
     }
     
 }
