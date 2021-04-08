@@ -56,6 +56,8 @@ void UART_init(unsigned int);
  */
 void UART_WiFi_TX (uint8_t);
 
+void delay_ms(int t);
 
+uint8_t * setupTransceiver();
 
 #endif
