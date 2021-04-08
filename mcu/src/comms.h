@@ -48,6 +48,7 @@ void UART_WiFi_init(unsigned int);
  * @param byte Byte of data to send to WiFi module
  */
 void UART_WiFi_TX (uint8_t);
+void UART_TRANS_TX (uint8_t byte);
 
 
 
