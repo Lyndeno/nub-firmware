@@ -2,31 +2,25 @@ package com.example.nubapplication;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.annotation.SuppressLint;
-import android.content.DialogInterface;
-import android.os.AsyncTask;
+
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 
 public class TextingActivity extends AppCompatActivity implements View.OnClickListener {
 
-    TextView textResponse;
-    EditText Message;
-    Button sendbutton;
+    private TextView textResponse;
+    private EditText Message;
+    private Button sendbutton;
     String IpAddress = "192.168.4.1";//Ip address of esp
     int Port = 3333;//Wifi Server Number to be filled out;
 
@@ -72,11 +66,14 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
                     packet = new DatagramPacket(message.getBytes(), message.length(), serverAddr, 3333);
                     socket.send(packet);
 
-                    byte[] buf = new byte[1024];
+                    /*byte[] buf = new byte[1024];
                     packet = new DatagramPacket(buf, buf.length);
                     socket.receive(packet);
-                    stringData = new String(buf, 0, packet.getLength());
+                    stringData = new String(buf, 0, packet.getLength());*/
 
+                }
+                catch (SocketException e){
+                    Log.e("Udp:", "Socket Error:", e);
                 }
                 catch (IOException e) {
                     e.printStackTrace();
@@ -86,6 +83,28 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
                         socket.close();
                     }
                 }
+
+            boolean run = true;
+                while (run) {
+                    try {
+                        socket = new DatagramSocket();
+                        byte[] buf = new byte[1024];
+                       DatagramPacket packet = new DatagramPacket(buf, buf.length);
+                        socket.receive(packet);
+                        stringData = new String(buf, 0, packet.getLength());
+                    }
+                    catch (IOException e){
+                        e.printStackTrace();
+                        run = false;
+                    }
+                    finally {
+                        if (socket!= null){
+                            socket.close();
+                        }
+                    }
+                }
+
+
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -103,49 +122,3 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
         }
 }
 
-       /* @Override
-        protected Void doInBackground(Void... arg0) {
-            Socket socket = null;
-            DataOutputStream dataOutputStream = null;
-            DataInputStream dataInputStream = null;
-
-            try {
-                socket = new Socket(IpAddress, Port);
-                dataOutputStream = new DataOutputStream(socket.getOutputStream());
-                dataInputStream = new DataInputStream(socket.getInputStream());
-
-                if(!msgToServer.equals(""))
-                    dataOutputStream.writeUTF(msgToServer + "$");
-
-                Response = dataInputStream.readUTF();
-
-            }
-            catch (IOException e) { }
-            finally {
-                if (socket != null) {
-                    try {
-                        socket.close();
-                    }
-                    catch (IOException e) {}
-                }
-                if (dataOutputStream != null) {
-                    try {
-                        dataOutputStream.close();
-                    }
-                    catch (IOException e) {}
-                }
-                if (dataInputStream != null) {
-                    try {
-                        dataInputStream.close();
-                    }
-                    catch (IOException e) {}
-                }
-            }
-            return null;
-        }
-        @Override
-        protected void onPostExecute(Void result) {
-            textResponse.setText(Response);
-            super.onPostExecute(result);
-        }
-    }*/
