@@ -1,4 +1,5 @@
 #include "buffer.h"
+#include "comms.h"
 
 // Kyle Stuff
 
@@ -87,31 +88,33 @@ uint8_t peekChar(uint8_t UARTPort){
 
 
 // Getting each unsigned character
-unsigned char getChar(uint8_t UARTPort){
+// TODO: Replace this with read_buffer
+unsigned char getChar(uart_dev UARTPort){
 	unsigned char ret = '\0';
 	
-	if ( UARTPort == 0){
+	if ( UARTPort == Transceiver ){
 		
-		if (rx0ReadPos != rx0WritePos){
-			unread0Bytes --;
-			ret = rx0Buffer[rx0ReadPos];
-			rx0ReadPos ++;
-			
-			if (rx0ReadPos >= RX0_BUFFER_SIZE){
-				rx0ReadPos = 0;
+		if (buff_trans_rx.head != buff_trans_rx.tail){
+			//unread0Bytes--;
+			buff_trans_rx.free++;
+			ret = buff_trans_rx.buff[buff_trans_rx.head++];
+			//rx0ReadPos ++;
+
+			if (buff_trans_rx.head >= buff_trans_rx.size){
+				buff_trans_rx.head = 0;
 			}
 		}
 	}
-	
-	else{
+	else if ( UARTPort == WiFi ){
 		
-		if (rx1ReadPos != rx1WritePos){
-			unread1Bytes --;
-			ret = rx1Buffer[rx1ReadPos];
-			rx1ReadPos ++;
-			
-			if (rx0ReadPos >= RX1_BUFFER_SIZE){
-				rx1ReadPos = 0;
+		if (buff_wifi_rx.head != buff_wifi_rx.tail){
+			//unread1Bytes--;
+			buff_wifi_rx.free++;
+			ret = buff_wifi_rx.buff[buff_wifi_rx.head++];
+			//rx1ReadPos ++;
+
+			if (buff_wifi_rx.head >= buff_wifi_rx.size){
+				buff_wifi_rx.head = 0;
 			}
 		}
 	}
