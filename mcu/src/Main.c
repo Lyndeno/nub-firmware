@@ -48,7 +48,7 @@ void check_frame (circular_buf * );
 
 int main (void) {
     // Initialize buffers first as UART needs them
-    UART_WiFi_init(UBRR_WIFI);
+    UART_init(UBRR_WIFI);
     DDR(PORT_STATUS_LED) |= (1<<PIN_STATUS_LED);
     DDR(PORT_TEST_LED) |= (1<<PIN_TEST_LED);
 

@@ -28,6 +28,8 @@
                    projectFiles="false">
       <itemPath>Makefile</itemPath>
     </logicalFolder>
+    <itemPath>src/messaging.c</itemPath>
+    <itemPath>src/messaging.h</itemPath>
   </logicalFolder>
   <sourceRootList>
     <Elem>src</Elem>
