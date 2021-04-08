@@ -123,15 +123,17 @@ unsigned char getChar(uart_dev UARTPort){
 }
 
 // Skipping to the most current point in the buffer
-void skipBuffer(uint8_t UARTPort){
+void skipBuffer(uart_dev UARTPort){
 	
-	if(UARTPort == 0){
-		unread0Bytes = 0;
-		rx0ReadPos = rx0WritePos;
+	if(UARTPort == Transceiver){
+		//unread0Bytes = 0;
+		buff_trans_rx.free = buff_trans_rx.size;
+		buff_trans_rx.head = buff_trans_rx.tail;
 	}
-	else{
-		unread1Bytes = 0;
-		rx1ReadPos = rx1WritePos;
+	else if (UARTPort == WiFi) {
+		//unread1Bytes = 0;
+		buff_wifi_rx.free = buff_wifi_rx.size;
+		buff_wifi_rx.head = buff_wifi_rx.tail;
 	}
 	
 }
