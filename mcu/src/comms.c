@@ -27,7 +27,18 @@ ISR(WIFI_RX_vect) {
         buff_wifi_rx.tail = 0;
     }
 
-    PORT(PORT_TEST_LED) ^= (1<<PIN_TEST_LED);
+    //PORT(PORT_TEST_LED) ^= (1<<PIN_TEST_LED);
+}
+
+ISR(TRANS_RX_vect){
+	// when interrupt is triggered then write UDR into buffer so we do not lose information
+    buff_trans_rx.buff[buff_trans_rx.tail++] = UDR_WIFI;
+    buff_trans_rx.free--;
+
+    if (buff_trans_rx.tail >= buff_trans_rx.size) {
+        buff_trans_rx.tail = 0;
+    }
+	
 }
 
 void delay_ms(int t){
