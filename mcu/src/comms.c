@@ -66,6 +66,7 @@ void UART_init (unsigned int ubrr) {
     UCSRB_WIFI = (1<<RXEN_WIFI)|(1<<TXEN_WIFI); // Enable receiving and transmission on UART
     UCSRB_WIFI |= (1<<RXCIE_WIFI); // enable receive interrupt for circular buffer
     //UCSRC_WIFI = (1<<USBS_WIFI)|(3<<UCSZ0_WIFI);			// 2 stop bits & 8 bit character size
+    init_buffer(&buff_wifi_rx, BUFFER_LENGTH_BYTES);
 
     // Enable Transceiver UART
     UBRRH_TRANS = (unsigned char)(ubrr>>8); // Set high bits of UBRR for baud rate
@@ -74,6 +75,7 @@ void UART_init (unsigned int ubrr) {
     UCSRB_TRANS = (1<<RXEN_TRANS)|(1<<TXEN_TRANS); // Enable receiving and transmission on UART
     UCSRB_TRANS |= (1<<RXCIE_TRANS); // enable receive interrupt for circular buffer
     //UCSRC_TRANS = (1<<USBS_TRANS)|(3<<UCSZ0_TRANS);			// 2 stop bits & 8 bit character size
+    init_buffer(&buff_trans_rx, BUFFER_LENGTH_BYTES);
 
     sei(); //enable interrupts
 }

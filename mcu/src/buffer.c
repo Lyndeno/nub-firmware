@@ -23,6 +23,7 @@ uint16_t unread1Bytes = 0;
 //
 
 circular_buf buff_wifi_rx;
+circular_buf buff_trans_rx;
 
 /** 
  * First check the head and tail of the buffer and make sure they do not match to avoid

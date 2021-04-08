@@ -24,6 +24,7 @@ typedef struct circular_buf {
 } circular_buf;
 
 extern circular_buf buff_wifi_rx;
+extern circular_buf buff_trans_rx;
 
 /** 
  * Read a byte from a buffer as referenced by the head pointer. The byte in the buffer is then cleared before the head pointer is incremented.
