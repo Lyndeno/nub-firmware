@@ -41,8 +41,8 @@
 #define TRANS_RX_vect USART1_RX_vect // Transceiver receive interrupt vector
 
 typedef enum uart_dev {
-    WiFi,
     Transceiver,
+    WiFi,
 } uart_dev;
 
 // Initialize UART
@@ -65,6 +65,6 @@ void delay_ms(int t);
 
 uint8_t * setupTransceiver();
 
-void TXWrite(unsigned char c[], uint8_t size, uint16_t uartPort );
+void TXWrite(unsigned char c[], uint8_t size, uart_dev dest );
 
 #endif
