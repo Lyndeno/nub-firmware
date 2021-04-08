@@ -9,23 +9,8 @@
 
 // Kyle Stuff
 
-#define RSTHUM		PORTB6
-#define MODEIND		PORTB7
-
-#define CRESP		PORTD2
-#define PB			PORTD3
-#define CMD			PORTD5
-#define SLEEPMODE	PORTD7
-
 #define LED			PORTE1
 
-extern unreadBytes;
-extern rx0Buffer;
-extern rx0WritePos;
-#define RX_BUFFER_SIZE 256
-#define TX_BUFFER_SIZE 256
-
-#define MaxNetworkSize 5
 #define MAX_NUB_CON 3
 #define MAX_PHONE_CON 3
 
