@@ -161,6 +161,28 @@ void handle_connection_frame (message_frame *rx_frame) {
     }
 }
 
+void connection_frame_mcu (wifi_device *mod_device) {
+    uart_frame tx_bytes;
+    tx_bytes.len = 10;
+    tx_bytes.data = pvPortMalloc(tx_bytes.len * sizeof(uint8_t));
+    tx_bytes.data[0] = 0x02;
+    tx_bytes.data[1] = 0x00;
+    tx_bytes.data[2] = 0x02;
+    switch (mod_device->state) {
+    case Connected:
+        tx_bytes.data[3] = 0x01;
+        break;
+    case Disconnected:
+        tx_bytes.data[3] = 0x02;
+        break;
+    default:
+        break;
+    }
+
+    copy_MAC(mod_device->mac, &(tx_bytes.data[4]));
+    xQueueSendToBack(q_uart_tx_bytes, &tx_bytes, portMAX_DELAY);
+}
+
 // Add/remove device from table and report to MCU
 void device_table_task (void *pvParameters) {
     q_wifi_state = xQueueCreate(32, sizeof(wifi_device));
@@ -199,6 +221,9 @@ void device_table_task (void *pvParameters) {
                 }
                 break;
             }
+
+            connection_frame_mcu(&new_state);
+
             vPortFree(new_state.mac);
         }
     }
