@@ -46,4 +46,14 @@ uint8_t check_buffer(circular_buf * );
  */
 void init_buffer(circular_buf *, size_t);
 
+uint8_t peekChar(void);
+
+unsigned char getChar(uint8_t UARTPort);
+
+void skipBuffer(void);
+
+uint8_t parseBufferForVal(int movePointer);
+
+uint16_t parseBufferForPtr(int movePtr);
+
 #endif

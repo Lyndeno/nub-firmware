@@ -1,5 +1,27 @@
 #include "buffer.h"
 
+// Kyle Stuff
+
+#define RX0_BUFFER_SIZE 256
+#define RX1_BUFFER_SIZE 256
+
+
+unsigned char rx0Buffer[RX0_BUFFER_SIZE];
+unsigned char rx0ReadPos = 0;
+unsigned char rx0WritePos = 0;
+unsigned char rx0BufferPointer = 0;
+
+unsigned char rx1Buffer[RX1_BUFFER_SIZE];
+unsigned char rx1ReadPos = 0;
+unsigned char rx1WritePos = 0;
+unsigned char rx1BufferPointer = 0;
+
+
+uint16_t unread0Bytes = 0;
+uint16_t unread1Bytes = 0;
+
+//
+
 circular_buf buff_wifi_rx;
 
 /** 
@@ -41,4 +63,135 @@ void init_buffer(circular_buf *buffer, size_t size) {
     buffer->size = size; // set maximum amount of bytes for buffer
     buffer->buff = (uint8_t *)malloc(buffer->size * sizeof(uint8_t)); // allocate memory to buffer
     buffer->free = buffer->size; // set free byte count TODO: find a use for free count or remove it
+}
+
+// Looking at next char
+uint8_t peekChar(uint8_t UARTPort){
+	uint8_t ret = '\0';
+	
+	if (UARTPort == 0){
+		if (rx0ReadPos != rx0WritePos){
+			ret = rx0Buffer[rx0ReadPos];
+		}
+	}
+	else{
+		if (rx1ReadPos != rx1WritePos){
+			ret = rx1Buffer[rx1ReadPos];
+		}
+	}
+	
+	
+	return ret;
+}
+
+
+// Getting each unsigned character
+unsigned char getChar(uint8_t UARTPort){
+	unsigned char ret = '\0';
+	
+	if ( UARTPort == 0){
+		
+		if (rx0ReadPos != rx0WritePos){
+			unread0Bytes --;
+			ret = rx0Buffer[rx0ReadPos];
+			rx0ReadPos ++;
+			
+			if (rx0ReadPos >= RX0_BUFFER_SIZE){
+				rx0ReadPos = 0;
+			}
+		}
+	}
+	
+	else{
+		
+		if (rx1ReadPos != rx1WritePos){
+			unread1Bytes --;
+			ret = rx1Buffer[rx1ReadPos];
+			rx1ReadPos ++;
+			
+			if (rx0ReadPos >= RX1_BUFFER_SIZE){
+				rx1ReadPos = 0;
+			}
+		}
+	}
+	
+	return ret;
+}
+
+// Skipping to the most current point in the buffer
+void skipBuffer(uint8_t UARTPort){
+	
+	if(UARTPort == 0){
+		unread0Bytes = 0;
+		rx0ReadPos = rx0WritePos;
+	}
+	else{
+		unread1Bytes = 0;
+		rx1ReadPos = rx1WritePos;
+	}
+	
+}
+
+// Allows the program to jump through the rx0 buffer 
+uint8_t parseBufferForVal(int movePtr, uint16_t jmpToPos){
+	
+	uint8_t returnChar;
+	// No jump to specific address, 
+	if (jmpToPos == 0){
+		if (rx0ReadPos + movePtr > RX0_BUFFER_SIZE){
+			rx0ReadPos = rx0ReadPos + movePtr - RX0_BUFFER_SIZE;
+		}
+		else{
+			rx0ReadPos= rx0ReadPos + movePtr;
+		}
+		
+		returnChar = rx0Buffer[rx0ReadPos];
+		if (movePtr > 0){
+			unread0Bytes = unread0Bytes - movePtr;
+		}
+		
+	}
+	
+	else{
+		
+		// Jump to specific address then move read position 
+		if (jmpToPos < rx0ReadPos){
+			unread0Bytes = RX0_BUFFER_SIZE - rx0ReadPos + jmpToPos;
+		}
+		else{
+			unread0Bytes = jmpToPos - rx0ReadPos;
+		}
+		
+		rx0ReadPos = jmpToPos;
+		
+		if (rx0ReadPos + movePtr > RX0_BUFFER_SIZE){
+			rx0ReadPos = rx0ReadPos + movePtr - RX0_BUFFER_SIZE;
+		}
+		else{
+			rx0ReadPos = rx0ReadPos + movePtr;
+		}
+		
+		
+		returnChar = rx0Buffer[rx0ReadPos];
+		
+		if (movePtr > 0){
+			unread0Bytes = unread0Bytes - movePtr;
+		}
+	}
+	
+	return returnChar;
+	
+}
+
+
+uint16_t  parseBufferForPtr(int movePtr){
+	
+	
+	if (rx0ReadPos + movePtr > RX0_BUFFER_SIZE){
+		return rx0ReadPos + movePtr - RX0_BUFFER_SIZE;
+	}
+	else{
+		return rx0ReadPos + movePtr;
+	}
+	
 }
