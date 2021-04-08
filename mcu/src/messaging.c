@@ -48,7 +48,7 @@ extern networkptr;
 uint8_t handleMessages(uint8_t *myDSN, struct networkStructure network){
 	
 	
-	uint8_t msgType = (uint8_t) getChar(0);		// Message type is stored as the first byte
+	uint8_t msgType = (uint8_t) getChar(Transceiver);		// Message type is stored as the first byte
 	uint8_t sourceDSN[4];
 	// Message that HUMPRO received over air
 	
@@ -57,26 +57,26 @@ uint8_t handleMessages(uint8_t *myDSN, struct networkStructure network){
 		// [msgType (1 byte), deviceNumInPath (1 byte), msgPathSize (1 byte), msgSize (1 byte), 
 		//  msgPath (var), destination phone address (6 bytes), source phone address (6 bytes), message (var)]
 		
-		uint8_t deviceNumInPath = getChar(0) + 1;		// Increment to this device
-		uint8_t msgPathSize = getChar(0);
-		uint8_t msgSize = getChar(0);
+		uint8_t deviceNumInPath = getChar(Transceiver) + 1;		// Increment to this device
+		uint8_t msgPathSize = getChar(Transceiver);
+		uint8_t msgSize = getChar(Transceiver);
 		uint8_t msg[msgSize];
 		uint8_t msgPath[msgPathSize*4];
 		for (uint8_t i = 0; i < msgPathSize*4; i ++){
-			msgPath[i] = getChar(0);
+			msgPath[i] = getChar(Transceiver);
 		}
 		
 		uint8_t destPhoneAdd[6];
 		for (uint8_t i = 0; i < 6; i ++){
-			destPhoneAdd[i] = getChar(0);
+			destPhoneAdd[i] = getChar(Transceiver);
 		}
 	
 		uint8_t srcPhoneAdd[6];
 		for (uint8_t i = 0; i < 6; i ++){
-			srcPhoneAdd[i] = getChar(0);
+			srcPhoneAdd[i] = getChar(Transceiver);
 		}
 		for (uint8_t i = 0; i < msgSize; i++){
-			msg[i] = getChar(0);
+			msg[i] = getChar(Transceiver);
 		}
 		
 		// Seeing if the this device is the last in the path, if so send message data to esp to be transmitted to the phone
@@ -105,10 +105,10 @@ uint8_t handleMessages(uint8_t *myDSN, struct networkStructure network){
 			}
 	}
 	if (msgType == 0x03){												// Network adjustment (broadcast)
-		sourceDSN[0] = (uint8_t) getChar(0);
-		sourceDSN[1] = (uint8_t) getChar(0);
-		sourceDSN[2] = (uint8_t) getChar(0);
-		sourceDSN[3] = (uint8_t) getChar(0);
+		sourceDSN[0] = (uint8_t) getChar(Transceiver);
+		sourceDSN[1] = (uint8_t) getChar(Transceiver);
+		sourceDSN[2] = (uint8_t) getChar(Transceiver);
+		sourceDSN[3] = (uint8_t) getChar(Transceiver);
 		
 	}
 	
@@ -121,8 +121,8 @@ uint8_t handleMessages(uint8_t *myDSN, struct networkStructure network){
 	
 	// Ack from Humpro after command is sent
 	if (msgType == 0x06){
-		uint8_t regNum		= (uint8_t) getChar(0);
-		uint8_t regValue	= (uint8_t) getChar(0);
+		uint8_t regNum		= (uint8_t) getChar(Transceiver);
+		uint8_t regValue	= (uint8_t) getChar(Transceiver);
 		return regValue;
 	}
 	// Message from Humpro
@@ -343,7 +343,7 @@ void broadcastCon(uint8_t txPWR,uint8_t srcDSN[], uint8_t *networkPtr, uint16_t 
 	PORTD &= ~(1 << CMD);	// cmd mode
 	uint8_t TXPower[4]	= {0xFF,0x02,0x02,txPWR};
 	TXWrite(TXPower,4,Transceiver);
-	getChar(0);
+	getChar(Transceiver);
 	
 	
 	uint8_t destDSNCMD[] = {0xFF,0x03,0x68,0xFE,0x7F};		// Putting broadcast address
@@ -354,7 +354,7 @@ void broadcastCon(uint8_t txPWR,uint8_t srcDSN[], uint8_t *networkPtr, uint16_t 
 	
 	for (uint8_t i = 0; i < 4; i++){
 		TXWrite(destDSNCMD,5,Transceiver);
-		getChar(0);
+		getChar(Transceiver);
 		destDSNCMD[2] = destDSNCMD[2] + 0x01;
 	}
 	
@@ -399,7 +399,7 @@ void compareNetworks(struct networkStructure *network){
 	*/
 	
 	uint16_t devicePtr[MaxNetworkSize];			// "points" to rx0 buffer location of device
-	uint8_t numOfDevicesInRx = getChar(0);
+	uint8_t numOfDevicesInRx = getChar(Transceiver);
 	
 	// Setting a pointer to each device in the network structure currently stored in the rx buffer
 	for (uint16_t deviceNum = 0; deviceNum < numOfDevicesInRx; deviceNum ++){
