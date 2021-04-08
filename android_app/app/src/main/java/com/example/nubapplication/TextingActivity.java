@@ -6,6 +6,7 @@ import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -21,14 +22,14 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-public class TextingActivity extends AppCompatActivity {
+public class TextingActivity extends AppCompatActivity implements View.OnClickListener {
 
     TextView textResponse;
     EditText Message;
     Button sendbutton;
     String IpAddress = "192.168.4.1";//Ip address of esp
     int Port = 3333;//Wifi Server Number to be filled out;
-    byte[] buf = new byte[1024];
+
 
 
     @Override
@@ -40,50 +41,64 @@ public class TextingActivity extends AppCompatActivity {
         textResponse = (TextView) findViewById(R.id.Response);
         Message = (EditText) findViewById(R.id.message);
 
-        sendbutton.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View view) {
-                MyClientTask myClientTask = new MyClientTask(Message.getText().toString());
-                myClientTask.execute();
-            }
-
-        });
-
-    }
-    @SuppressLint("StaticFieldLeak")
-    public class MyClientTask extends AsyncTask<Void,Void,Void> {
-        String Response = "";
-        String msgToServer;
-
-        MyClientTask(String msgTo) {
-            msgToServer = msgTo;
+        sendbutton.setOnClickListener(this);
         }
 
         @Override
-        protected Void doInBackground(Void... voids) {
-            InetAddress ip_addr;
-            DatagramPacket packet;
-            DatagramSocket socket;
+        public void onClick(View v) {
+            switch (v.getId()) {
 
-            try {
-                ip_addr = InetAddress.getByName(IpAddress);
-                socket = new DatagramSocket();
-                packet = new DatagramPacket(buf, buf.length, ip_addr, Port);
+                case R.id.sendMessage:
+                    MessageSend(Message.getText().toString());
+                    break;
+            }
+    }
 
-                socket.send(packet);
-                socket.close();
+    private void MessageSend(final String message) {
+
+        final Handler handler = new Handler();
+        Thread thread = new Thread(new Runnable() {
+
+            String stringData;
+
+            @Override
+            public void run() {
+
+                DatagramSocket socket = null;
+                try {
+                    socket = new DatagramSocket();
+                    InetAddress serverAddr = InetAddress.getByName(IpAddress);
+                    DatagramPacket packet;
+                    packet = new DatagramPacket(message.getBytes(), message.length(), serverAddr, 3333);
+                    socket.send(packet);
+
+                    byte[] buf = new byte[1024];
+                    packet = new DatagramPacket(buf, buf.length);
+                    socket.receive(packet);
+                    stringData = new String(buf, 0, packet.getLength());
+
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+                finally {
+                    if (socket!= null){
+                        socket.close();
+                    }
+                }
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        String s = textResponse.getText().toString();
+                        if (stringData.trim().length() != 0)
+                            textResponse.setText(s + "\nFrom Server : " + stringData);
+
+                    }
+                });
             }
-            catch (UnknownHostException e) {
-                e.printStackTrace();
-            }
-            catch (SocketException e) {
-                e.printStackTrace();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
+        });
+
+        thread.start();
 
         }
 }
