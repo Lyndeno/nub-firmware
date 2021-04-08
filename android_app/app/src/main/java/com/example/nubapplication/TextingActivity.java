@@ -87,14 +87,15 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
             boolean run = true;
                 while (run) {
                     try {
-                        socket = new DatagramSocket();
+                        //socket = new DatagramSocket();
                         byte[] buf = new byte[4069];
-                       DatagramPacket packet = new DatagramPacket(buf, buf.length);
+                        DatagramPacket packet = new DatagramPacket(buf, buf.length);
+                        //DatagramSocket sock = new DatagramSocket(Port);
                         socket.receive(packet);
+                        //socket.receive(packet);
+
                         stringData = new String(buf, 0, packet.getLength());
-                        String s = textResponse.getText().toString();
-                        if (stringData.trim().length() != 0)
-                            textResponse.setText(s + "\nFrom Server : " + stringData);
+
                     }
                     catch (IOException e){
                         e.printStackTrace();
@@ -108,7 +109,7 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
                 }
 
 
-               /* handler.post(new Runnable() {
+                handler.post(new Runnable() {
                     @Override
                     public void run() {
                         String s = textResponse.getText().toString();
@@ -116,7 +117,7 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
                             textResponse.setText(s + "\nFrom Server : " + stringData);
 
                     }
-                });*/
+                });
             }
         });
 
