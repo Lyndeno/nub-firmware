@@ -152,21 +152,21 @@ uint8_t * setupTransceiver(){
 	// Send all defined commands through uart
 	//TX0Write(hopTable[0],4);
 	delay_ms(50);
-	TXWrite(TXPower[0],4,0);
+	TXWrite(TXPower[0],4, Transceiver);
 	delay_ms(50);
 	getChar(0);
 	//TX0Write(UARTBaud[0],4);
 	
 	
-	TXWrite(addMode,4,0);
+	TXWrite(addMode,4, Transceiver);
 	delay_ms(50);
 	getChar(0);
 	
 	//TX0Write(showVer[0],4);
-	TXWrite(CMDHold,4,0);
+	TXWrite(CMDHold,4,Transceiver);
 	delay_ms(50);
 	getChar(0);
-	TXWrite(compat,4,0);
+	TXWrite(compat,4,Transceiver);
 	delay_ms(50);
 	getChar(0);
 	//TX0Write(autoAdd[0],4);
@@ -175,7 +175,7 @@ uint8_t * setupTransceiver(){
 	// Getting local DNS info (third char returned)
 	uint8_t *myDSNVal = malloc(4*sizeof(uint8_t));
 	
-	TXWrite(myDSN3,4,0);
+	TXWrite(myDSN3,4,Transceiver);
 	_delay_ms(100);
 	while(unread0Bytes < 3);
 	
@@ -184,7 +184,7 @@ uint8_t * setupTransceiver(){
 	myDSNVal[0] = getChar(0);
 	
 	
-	TXWrite(myDSN2,4,0);
+	TXWrite(myDSN2,4,Transceiver);
 	_delay_ms(100);
 	while(unread0Bytes < 3);
 		
@@ -192,14 +192,14 @@ uint8_t * setupTransceiver(){
 	myDSNVal[1] = getChar(0);
 	
 	
-	TXWrite(myDSN1,4,0);
+	TXWrite(myDSN1,4,Transceiver);
 	_delay_ms(100);
 	while(unread0Bytes < 3);
 	rx0ReadPos = rx0WritePos -1;
 	myDSNVal[2] = getChar(0);
 	
 	
-	TXWrite(myDSN0,4,0);
+	TXWrite(myDSN0,4,Transceiver);
 	_delay_ms(100);
 	while(unread0Bytes < 3);
 	rx0ReadPos = rx0WritePos -1;
@@ -207,7 +207,7 @@ uint8_t * setupTransceiver(){
 	
 	_delay_ms(3000);
 	
-	TXWrite(myDSNVal,4,0);
+	TXWrite(myDSNVal,4,Transceiver);
 	_delay_ms(1000);
 	PORTD |= (1 << PORTD5);	// Data transmit mode
 	// Resetting HUMPRO to have non volatile registers update
