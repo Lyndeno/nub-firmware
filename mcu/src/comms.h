@@ -40,6 +40,11 @@
 #define UCSZ0_TRANS UCSZ10
 #define TRANS_RX_vect USART1_RX_vect // Transceiver receive interrupt vector
 
+typedef enum uart_dev {
+    WiFi_dev,
+    Transceiver,
+} uart_dev;
+
 // Initialize UART
 
 /** 
