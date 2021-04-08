@@ -108,7 +108,7 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
                 }
 
 
-                handler.post(new Runnable() {
+               /* handler.post(new Runnable() {
                     @Override
                     public void run() {
                         String s = textResponse.getText().toString();
@@ -116,7 +116,7 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
                             textResponse.setText(s + "\nFrom Server : " + stringData);
 
                     }
-                });
+                });*/
             }
         });
 
