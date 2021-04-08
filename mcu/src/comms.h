@@ -41,7 +41,7 @@
 #define TRANS_RX_vect USART1_RX_vect // Transceiver receive interrupt vector
 
 typedef enum uart_dev {
-    WiFi_dev,
+    WiFi,
     Transceiver,
 } uart_dev;
 
