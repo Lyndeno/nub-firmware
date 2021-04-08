@@ -68,21 +68,19 @@ void init_buffer(circular_buf *buffer, size_t size) {
 }
 
 // Looking at next char
-uint8_t peekChar(uint8_t UARTPort){
+uint8_t peekChar(uart_dev UARTPort){
 	uint8_t ret = '\0';
 	
-	if (UARTPort == 0){
-		if (rx0ReadPos != rx0WritePos){
-			ret = rx0Buffer[rx0ReadPos];
+	if (UARTPort == Transceiver){
+		if (buff_trans_rx.head != buff_trans_rx.tail){
+			ret = buff_trans_rx.buff[buff_trans_rx.head];
 		}
 	}
-	else{
-		if (rx1ReadPos != rx1WritePos){
-			ret = rx1Buffer[rx1ReadPos];
+	else if (UARTPort == WiFi) {
+		if (buff_wifi_rx.head != buff_wifi_rx.tail){
+			ret = buff_wifi_rx.buff[buff_wifi_rx.head];
 		}
 	}
-	
-	
 	return ret;
 }
 
