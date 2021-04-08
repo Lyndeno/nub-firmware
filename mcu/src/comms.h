@@ -40,7 +40,7 @@
  * 
  * @param ubrr UBRR register value to use for baud rate.
  */
-void UART_WiFi_init(unsigned int);
+void UART_init(unsigned int);
 
 /** 
  * Writes the given byte to the WiFi transmission register when there is no pending transmission.

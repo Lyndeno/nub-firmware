@@ -20,7 +20,7 @@ ISR(WIFI_RX_vect) {
  * Initializes a given buffer for use. This function sets the baud rate, enables transmission and reception,
  * and enables a receive interrupt for UART.
  */
-void UART_WiFi_init (unsigned int ubrr) {
+void UART_init (unsigned int ubrr) {
     // Disable power reduction for USARTS
     //PRR0 |= (1<<PRUSART0)|(1<<PRUSART1);
 
