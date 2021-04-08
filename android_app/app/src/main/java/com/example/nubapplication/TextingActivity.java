@@ -92,6 +92,9 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
                        DatagramPacket packet = new DatagramPacket(buf, buf.length);
                         socket.receive(packet);
                         stringData = new String(buf, 0, packet.getLength());
+                        String s = textResponse.getText().toString();
+                        if (stringData.trim().length() != 0)
+                            textResponse.setText(s + "\nFrom Server : " + stringData);
                     }
                     catch (IOException e){
                         e.printStackTrace();
