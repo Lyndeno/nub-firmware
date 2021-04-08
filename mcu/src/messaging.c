@@ -144,7 +144,8 @@ void writeDestDSN(uint8_t destDSN[]){
 		TXWrite(destDSNCmd,4,Transceiver);
 		
 	}
-	skipBuffer();			// Clearing buffer of acknowledges
+	//TODO: Is this for transceiver?
+	skipBuffer(Transceiver);			// Clearing buffer of acknowledges
 	_delay_ms(10);
 	PORTD |= (1 << PORTD5);	// transmit mode
 }
