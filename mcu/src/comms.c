@@ -4,15 +4,8 @@
 #include "io.h"
 
 // This stuff needs to be defined in its own header for everything
-#define RSTHUM		PORTB6
-#define MODEIND		PORTB7
-
 #define CRESP		PORTD2
-#define PB			PORTD3
 #define CMD			PORTD5
-#define SLEEPMODE	PORTD7
-
-#define PWRHUM		PORTE1
 
 ISR(WIFI_RX_vect) {
     // when interrupt is triggered then write UDR into buffer so we do not lose information
