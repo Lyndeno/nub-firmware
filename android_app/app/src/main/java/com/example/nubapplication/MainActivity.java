@@ -21,8 +21,8 @@ public class MainActivity extends AppCompatActivity {
     static WifiManager wifiManager;
     Context context;
     WifiConfiguration conf;
-    public static String networkSSID = "esp_abc";
-    public static String networkPass = "1234";
+    public static String networkSSID = "NUB";
+    public static String networkPass = "capstone1234";
     byte[] buf = new byte[1024];
 
 

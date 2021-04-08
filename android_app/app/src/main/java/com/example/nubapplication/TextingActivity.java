@@ -14,7 +14,11 @@ import android.widget.TextView;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 
 public class TextingActivity extends AppCompatActivity {
@@ -24,6 +28,7 @@ public class TextingActivity extends AppCompatActivity {
     Button sendbutton;
     String IpAddress = "192.168.4.1";//Ip address of esp
     int Port = 3333;//Wifi Server Number to be filled out;
+    byte[] buf = new byte[1024];
 
 
     @Override
@@ -53,7 +58,37 @@ public class TextingActivity extends AppCompatActivity {
         MyClientTask(String msgTo) {
             msgToServer = msgTo;
         }
+
         @Override
+        protected Void doInBackground(Void... voids) {
+            InetAddress ip_addr;
+            DatagramPacket packet;
+            DatagramSocket socket;
+
+            try {
+                ip_addr = InetAddress.getByName(IpAddress);
+                socket = new DatagramSocket();
+                packet = new DatagramPacket(buf, buf.length, ip_addr, Port);
+
+                socket.send(packet);
+                socket.close();
+            }
+            catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+            catch (SocketException e) {
+                e.printStackTrace();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        }
+}
+
+       /* @Override
         protected Void doInBackground(Void... arg0) {
             Socket socket = null;
             DataOutputStream dataOutputStream = null;
@@ -98,5 +133,4 @@ public class TextingActivity extends AppCompatActivity {
             textResponse.setText(Response);
             super.onPostExecute(result);
         }
-    }
-}
+    }*/
