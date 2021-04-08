@@ -66,15 +66,13 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
                     packet = new DatagramPacket(message.getBytes(), message.length(), serverAddr, 3333);
                     socket.send(packet);
 
-                    /*byte[] buf = new byte[1024];
+                    byte[] buf = new byte[4096];
                     packet = new DatagramPacket(buf, buf.length);
                     socket.receive(packet);
-                    stringData = new String(buf, 0, packet.getLength());*/
+                    stringData = new String(buf, 0, packet.getLength());
 
                 }
-                catch (SocketException e){
-                    Log.e("Udp:", "Socket Error:", e);
-                }
+
                 catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -83,41 +81,15 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
                         socket.close();
                     }
                 }
-
-            boolean run = true;
-                while (run) {
-                    try {
-                        //socket = new DatagramSocket();
-                        byte[] buf = new byte[4069];
-                        DatagramPacket packet = new DatagramPacket(buf, buf.length);
-                        //DatagramSocket sock = new DatagramSocket(Port);
-                        socket.receive(packet);
-                        //socket.receive(packet);
-
-                        stringData = new String(buf, 0, packet.getLength());
-
-                    }
-                    catch (IOException e){
-                        e.printStackTrace();
-                        run = false;
-                    }
-                    finally {
-                        if (socket!= null){
-                            socket.close();
-                        }
-                    }
-                }
-
-
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
                         String s = textResponse.getText().toString();
                         if (stringData.trim().length() != 0)
                             textResponse.setText(s + "\nFrom Server : " + stringData);
-
                     }
                 });
+
             }
         });
 
