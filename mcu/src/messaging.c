@@ -6,20 +6,11 @@
 #include "comms.h"
 #include "buffer.h"
 
-#define RSTHUM		PORTB6
-#define MODEIND		PORTB7
-
-#define CRESP		PORTD2
-#define PB			PORTD3
 #define CMD			PORTD5
-#define SLEEPMODE	PORTD7
-
-#define PWR			PORTE1
 
 #define MaxNetworkSize	5
 #define MAX_NUB_CON		3
 #define MAX_PHONE_CON	3
-
 
 extern myDSN;
 extern networkStructure;
