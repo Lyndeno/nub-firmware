@@ -3,7 +3,8 @@
 #include <stdio.h>
 #include <avr/interrupt.h>
 #include <stdlib.h>
-#include "handleUart.h"
+#include "comms.h"
+#include "buffer.h"
 
 #define RSTHUM		PORTB6
 #define MODEIND		PORTB7
@@ -81,7 +82,7 @@ uint8_t handleMessages(uint8_t *myDSN, struct networkStructure network){
 		// Seeing if the this device is the last in the path, if so send message data to esp to be transmitted to the phone
 		if (deviceNumInPath == msgPathSize){
 			uint8_t espMsg[] = {msgType,destPhoneAdd,srcPhoneAdd,msgSize,msg};
-			TXWrite(espMsg,sizeof(espMsg),1);
+			TXWrite(espMsg,sizeof(espMsg),WiFi);
 		}
 		
 		// If not pass along the message to the next NUB device
@@ -93,12 +94,12 @@ uint8_t handleMessages(uint8_t *myDSN, struct networkStructure network){
 			// Send [msgType (1 byte), deviceNumInPath (1 byte), msgPathSize (1 byte), msgSize (1 byte), 
 			//       msgPath (var), destination phone address (6 bytes), source phone address (6 bytes), message (var)]
 	
-			TXWrite(msgHeader,sizeof(msgHeader),0);
-			TXWrite(msgPath,msgPathSize*4,0);
-			TXWrite(destPhoneAdd,6,0);			// mac address
-			TXWrite(srcPhoneAdd,6,0);			// mac address
+			TXWrite(msgHeader,sizeof(msgHeader),Transceiver);
+			TXWrite(msgPath,msgPathSize*4,Transceiver);
+			TXWrite(destPhoneAdd,6,Transceiver);			// mac address
+			TXWrite(srcPhoneAdd,6,Transceiver);			// mac address
 	
-			TXWrite(msg, msgSize,0);
+			TXWrite(msg, msgSize,Transceiver);
 		
 			sendAck(myDSN,sourceDSN);
 			}
@@ -113,7 +114,7 @@ uint8_t handleMessages(uint8_t *myDSN, struct networkStructure network){
 	
 	// Acknowledgment received
 	if(msgType == 0x04){
-		TXWrite(0x16,1,0);
+		TXWrite(0x16,1,Transceiver);
 		return 0x04;													// Will change later when checking connections
 	}
 	
@@ -140,7 +141,7 @@ void writeDestDSN(uint8_t destDSN[]){
 		
 		destDSNCmd[3] = destDSN[i];
 		destDSNCmd[2] = destDSNCmd[2] + 1;
-		TXWrite(destDSNCmd,4,0);
+		TXWrite(destDSNCmd,4,Transceiver);
 		
 	}
 	skipBuffer();			// Clearing buffer of acknowledges
@@ -313,12 +314,12 @@ void sendMessageSimple(uint8_t msgPathSize, uint8_t deviceNumInPath, uint8_t msg
 	// Send [msgType (1 byte), deviceNumInPath (1 byte), msgPathSize (1 byte), msgSize (1 byte), 
 	//       msgPath (var), destination phone address (6 bytes), source phone address (6 bytes), message (var)]
 	
-	TXWrite(msgHeader,sizeof(msgHeader),0);
-	TXWrite(msgPath,msgPathSize*4,0);
-	TXWrite(destPhoneAdd,6,0);			// mac address
-	TXWrite(srcPhoneAdd,6,0);			// mac address
+	TXWrite(msgHeader,sizeof(msgHeader),Transceiver);
+	TXWrite(msgPath,msgPathSize*4,Transceiver);
+	TXWrite(destPhoneAdd,6,Transceiver);			// mac address
+	TXWrite(srcPhoneAdd,6,Transceiver);			// mac address
 	
-	TXWrite(msg, msgSize,0);
+	TXWrite(msg, msgSize,Transceiver);
 	
 }
 
@@ -331,8 +332,8 @@ void sendAck(uint8_t srcDSN[], uint8_t destDSN[]){
 	uint8_t msg[] = {0x01};
 	writeDestDSN(destDSN);
 	
-	TXWrite(msgHeader,5,0);
-	TXWrite(msg,1,0);
+	TXWrite(msgHeader,5,Transceiver);
+	TXWrite(msg,1,Transceiver);
 	
 }
 
@@ -341,7 +342,7 @@ void sendAck(uint8_t srcDSN[], uint8_t destDSN[]){
 void broadcastCon(uint8_t txPWR,uint8_t srcDSN[], uint8_t *networkPtr, uint16_t networkPtrSize){
 	PORTD &= ~(1 << CMD);	// cmd mode
 	uint8_t TXPower[4]	= {0xFF,0x02,0x02,txPWR};
-	TXWrite(TXPower,4,0);
+	TXWrite(TXPower,4,Transceiver);
 	getChar(0);
 	
 	
@@ -352,7 +353,7 @@ void broadcastCon(uint8_t txPWR,uint8_t srcDSN[], uint8_t *networkPtr, uint16_t 
 	
 	
 	for (uint8_t i = 0; i < 4; i++){
-		TXWrite(destDSNCMD,5,0);
+		TXWrite(destDSNCMD,5,Transceiver);
 		getChar(0);
 		destDSNCMD[2] = destDSNCMD[2] + 0x01;
 	}
@@ -361,8 +362,8 @@ void broadcastCon(uint8_t txPWR,uint8_t srcDSN[], uint8_t *networkPtr, uint16_t 
 	PORTD |= (1 << CMD);		// Transmission mode
 	_delay_ms(10);
 	
-	TXWrite(msgHeader,5,0);
-	TXWrite(networkPtr,networkPtrSize,0);	 // Sending connected devices structure
+	TXWrite(msgHeader,5,Transceiver);
+	TXWrite(networkPtr,networkPtrSize,Transceiver);	 // Sending connected devices structure
 	
 	
 }
@@ -396,7 +397,6 @@ void compareNetworks(struct networkStructure *network){
 	....
 	]
 	*/
-	m
 	
 	uint16_t devicePtr[MaxNetworkSize];			// "points" to rx0 buffer location of device
 	uint8_t numOfDevicesInRx = getChar(0);
