@@ -20,14 +20,14 @@ extern unread0Bytes;
 
 ISR(WIFI_RX_vect) {
     // when interrupt is triggered then write UDR into buffer so we do not lose information
-    buff_wifi_rx.buff[buff_wifi_rx.tail++] = UDR0;
+    buff_wifi_rx.buff[buff_wifi_rx.tail++] = UDR_WIFI;
     buff_wifi_rx.free--;
-
-    PORT(PORT_TEST_LED) ^= (1<<PIN_TEST_LED);
 
     if (buff_wifi_rx.tail >= buff_wifi_rx.size) {
         buff_wifi_rx.tail = 0;
     }
+
+    PORT(PORT_TEST_LED) ^= (1<<PIN_TEST_LED);
 }
 
 void delay_ms(int t){
@@ -74,6 +74,31 @@ void UART_init (unsigned int ubrr) {
 void UART_WiFi_TX (uint8_t byte) {
     while(!( UCSRA_WIFI & (1<<UDRE_WIFI))); // Wait for TX to finish
     UDR_WIFI = byte; // Write for TX
+}
+
+// Taking input characters of size size and sending them through the UART TX without storing the values in a buffer first
+void TXWrite(unsigned char c[], uint8_t size, uint16_t uartPort ){
+	
+	// Writing to the transmit port the amount of characters defined by size
+	uint16_t count = 0;
+	while (size > 0 ){
+		if (uartPort == 0){
+			
+			while (!(UCSR0A & (1<<UDRE0)));
+			UDR0 = c[count];
+			count++;
+			size --;
+		}
+		else{
+			while (!(UCSR1A & (1<<UDRE1)));
+			UDR1 = c[count];
+			count++;
+			size --;
+		}
+		
+		
+	}
+	
 }
 
 // Setting up ports for HUMPRO900 transceiver
