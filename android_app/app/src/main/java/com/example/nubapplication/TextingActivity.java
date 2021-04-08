@@ -88,7 +88,7 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
                 while (run) {
                     try {
                         socket = new DatagramSocket();
-                        byte[] buf = new byte[1024];
+                        byte[] buf = new byte[4069];
                        DatagramPacket packet = new DatagramPacket(buf, buf.length);
                         socket.receive(packet);
                         stringData = new String(buf, 0, packet.getLength());
