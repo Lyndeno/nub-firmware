@@ -46,8 +46,8 @@ void handle_bytes_task (void *pvParamters) {
                     if ( !rx_byte(&temp_rx) ) continue; // then get the second byte
                     mess_len |= temp_rx;
 
-                    //tx_frame.len = mess_len;
-                    tx_frame.len = 17;
+                    tx_frame.len = mess_len;
+                    //tx_frame.len = 17;
                     tx_frame.data = pvPortMalloc(tx_frame.len * sizeof(uint8_t));
 
                     for (size_t i = 0; i < tx_frame.len; i++) {
@@ -123,17 +123,17 @@ void handle_frames_task (void *pvParameters) {
 
 void handle_message_frame (message_frame *rx_frame) {
     uart_frame tx_bytes;
-    tx_bytes.len = rx_frame->len + 5; // 5 bytes before message starts
+    tx_bytes.len = rx_frame->len + 5 - 1; // 5 bytes before message starts minus message header
     tx_bytes.data = pvPortMalloc(tx_bytes.len * sizeof(uint8_t));
     tx_bytes.data[0] = 0x02; // NUB header
     tx_bytes.data[1] = 0x00; // data len
     tx_bytes.data[2] = 0x01; // msg type
-    tx_bytes.data[3] = (rx_frame->len) >> 8; // first byte of length
-    tx_bytes.data[4] = (rx_frame->len) & 0x00FF; // second byte of length
+    tx_bytes.data[3] = (rx_frame->len - 1) >> 8; // first byte of length
+    tx_bytes.data[4] = (rx_frame->len - 1) & 0x00FF; // second byte of length
 
     // send message to uart queue
-    for (size_t i = 0; i < rx_frame->len; i++) {
-        tx_bytes.data[i + 5] = rx_frame->data[i];
+    for (size_t i = 0; i < rx_frame->len - 1; i++) {
+        tx_bytes.data[i + 5] = rx_frame->data[i + 1];
     }
     xQueueSendToBack(q_uart_tx_bytes, &tx_bytes, portMAX_DELAY);
 }
