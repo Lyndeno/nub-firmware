@@ -152,21 +152,21 @@ uint8_t * setupTransceiver(){
 	delay_ms(50);
 	TXWrite(TXPower[0],4, Transceiver);
 	delay_ms(50);
-	getChar(0);
+	getChar(Transceiver);
 	//TX0Write(UARTBaud[0],4);
 	
 	
 	TXWrite(addMode,4, Transceiver);
 	delay_ms(50);
-	getChar(0);
+	getChar(Transceiver);
 	
 	//TX0Write(showVer[0],4);
 	TXWrite(CMDHold,4,Transceiver);
 	delay_ms(50);
-	getChar(0);
+	getChar(Transceiver);
 	TXWrite(compat,4,Transceiver);
 	delay_ms(50);
-	getChar(0);
+	getChar(Transceiver);
 	//TX0Write(autoAdd[0],4);
 	
 	
@@ -179,7 +179,7 @@ uint8_t * setupTransceiver(){
 	
 	buff_trans_rx.head = buff_trans_rx.tail - 1;		// Ignoring other bytes received, only care about DSN value
 
-	myDSNVal[0] = getChar(0);
+	myDSNVal[0] = getChar(Transceiver);
 	
 	
 	TXWrite(myDSN2,4,Transceiver);
@@ -187,21 +187,21 @@ uint8_t * setupTransceiver(){
 	while((buff_trans_rx.size - buff_trans_rx.free) < 3);
 		
 	buff_trans_rx.head = buff_trans_rx.tail - 1;
-	myDSNVal[1] = getChar(0);
+	myDSNVal[1] = getChar(Transceiver);
 	
 	
 	TXWrite(myDSN1,4,Transceiver);
 	_delay_ms(100);
 	while((buff_trans_rx.size - buff_trans_rx.free) < 3);
 	buff_trans_rx.head = buff_trans_rx.tail - 1;
-	myDSNVal[2] = getChar(0);
+	myDSNVal[2] = getChar(Transceiver);
 	
 	
 	TXWrite(myDSN0,4,Transceiver);
 	_delay_ms(100);
 	while((buff_trans_rx.size - buff_trans_rx.free) < 3);
 	buff_trans_rx.head = buff_trans_rx.tail - 1;
-	myDSNVal[3] = getChar(0);
+	myDSNVal[3] = getChar(Transceiver);
 	
 	_delay_ms(3000);
 	
