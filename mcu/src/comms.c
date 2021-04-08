@@ -86,12 +86,12 @@ void UART_WiFi_TX (uint8_t byte) {
 }
 
 // Taking input characters of size size and sending them through the UART TX without storing the values in a buffer first
-void TXWrite(unsigned char c[], uint8_t size, uart_dev dest ){
+void TXWrite(unsigned char c[], uint8_t size, uart_dev dest ) {
 	
 	// Writing to the transmit port the amount of characters defined by size
 	uint16_t count = 0;
-	while (size > 0 ){
-		if (dest == WiFi){
+	while (size > 0 ) {
+		if (dest == WiFi) {
 			while (!(UCSRA_WIFI & (1<<UDRE_WIFI)));
 			UDR_WIFI = c[count];
 			count++;
@@ -107,7 +107,7 @@ void TXWrite(unsigned char c[], uint8_t size, uart_dev dest ){
 }
 
 // Setting up ports for HUMPRO900 transceiver
-uint8_t * setupTransceiver(){
+uint8_t * setupTransceiver() {
 	
 	sei();		// Enabling interrupts
 	DDRB |= (1 << DDB7);	//PD4 PWR High for normal op, low for low power operation (power down)

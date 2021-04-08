@@ -25,7 +25,7 @@ extern myDSN;
 extern networkStructure;
 
 // Connections to each specific NUB
-struct localConnections{
+struct localConnections {
 	uint8_t deviceDSN[4];
 	uint8_t numOfNubCon;
 	uint8_t numOfPhoneCon;			// How many devices are connected to this one
@@ -35,17 +35,14 @@ struct localConnections{
 
 
 // Overall network structure, 175 Bytes
-struct networkStructure{
+struct networkStructure {
 	uint8_t numOfDevices;
-	
 	struct localConnections device[5];		// Max network size of 5 connections
-	
 };
 
 extern networkptr;
 
-
-uint8_t handleMessages(uint8_t *myDSN, struct networkStructure network){
+uint8_t handleMessages(uint8_t *myDSN, struct networkStructure network) {
 	
 	
 	uint8_t msgType = (uint8_t) getChar(Transceiver);		// Message type is stored as the first byte
@@ -53,7 +50,7 @@ uint8_t handleMessages(uint8_t *myDSN, struct networkStructure network){
 	// Message that HUMPRO received over air
 	
 	
-	if (msgType == 0x01){
+	if (msgType == 0x01) {
 		// [msgType (1 byte), deviceNumInPath (1 byte), msgPathSize (1 byte), msgSize (1 byte), 
 		//  msgPath (var), destination phone address (6 bytes), source phone address (6 bytes), message (var)]
 		
@@ -62,31 +59,31 @@ uint8_t handleMessages(uint8_t *myDSN, struct networkStructure network){
 		uint8_t msgSize = getChar(Transceiver);
 		uint8_t msg[msgSize];
 		uint8_t msgPath[msgPathSize*4];
-		for (uint8_t i = 0; i < msgPathSize*4; i ++){
+		for (uint8_t i = 0; i < msgPathSize*4; i ++) {
 			msgPath[i] = getChar(Transceiver);
 		}
 		
 		uint8_t destPhoneAdd[6];
-		for (uint8_t i = 0; i < 6; i ++){
+		for (uint8_t i = 0; i < 6; i ++) {
 			destPhoneAdd[i] = getChar(Transceiver);
 		}
 	
 		uint8_t srcPhoneAdd[6];
-		for (uint8_t i = 0; i < 6; i ++){
+		for (uint8_t i = 0; i < 6; i ++) {
 			srcPhoneAdd[i] = getChar(Transceiver);
 		}
-		for (uint8_t i = 0; i < msgSize; i++){
+		for (uint8_t i = 0; i < msgSize; i++) {
 			msg[i] = getChar(Transceiver);
 		}
 		
 		// Seeing if the this device is the last in the path, if so send message data to esp to be transmitted to the phone
-		if (deviceNumInPath == msgPathSize){
+		if (deviceNumInPath == msgPathSize) {
 			uint8_t espMsg[] = {msgType,destPhoneAdd,srcPhoneAdd,msgSize,msg};
 			TXWrite(espMsg,sizeof(espMsg),WiFi);
 		}
 		
 		// If not pass along the message to the next NUB device
-		else{
+		else {
 			uint8_t msgHeader[] = {msgType,deviceNumInPath,msgPathSize,msgSize};
 	
 			writeDestDSN(msgPath[deviceNumInPath + 1]);		// The next devices DSN
@@ -102,25 +99,23 @@ uint8_t handleMessages(uint8_t *myDSN, struct networkStructure network){
 			TXWrite(msg, msgSize,Transceiver);
 		
 			sendAck(myDSN,sourceDSN);
-			}
+		}
 	}
-	if (msgType == 0x03){												// Network adjustment (broadcast)
+	if (msgType == 0x03) {												// Network adjustment (broadcast)
 		sourceDSN[0] = (uint8_t) getChar(Transceiver);
 		sourceDSN[1] = (uint8_t) getChar(Transceiver);
 		sourceDSN[2] = (uint8_t) getChar(Transceiver);
-		sourceDSN[3] = (uint8_t) getChar(Transceiver);
-		
+		sourceDSN[3] = (uint8_t) getChar(Transceiver);	
 	}
 	
 	// Acknowledgment received
-	if(msgType == 0x04){
+	if(msgType == 0x04) {
 		TXWrite(0x16,1,Transceiver);
 		return 0x04;													// Will change later when checking connections
 	}
 	
-	
 	// Ack from Humpro after command is sent
-	if (msgType == 0x06){
+	if (msgType == 0x06) {
 		uint8_t regNum		= (uint8_t) getChar(Transceiver);
 		uint8_t regValue	= (uint8_t) getChar(Transceiver);
 		return regValue;
@@ -132,12 +127,12 @@ uint8_t handleMessages(uint8_t *myDSN, struct networkStructure network){
 
 
 // Updated the destination DSN on the HUMPRO
-void writeDestDSN(uint8_t destDSN[]){
+void writeDestDSN(uint8_t destDSN[]) {
 	
 	uint8_t destDSNCmd[] = {0xFF,0x02,0x67,0xFF};
 	PORTD &= ~(1 << PORTD5);	// cmd mode
 	
-	for (uint8_t i = 0; i < 4; i++ ){
+	for (uint8_t i = 0; i < 4; i++ ) {
 		
 		destDSNCmd[3] = destDSN[i];
 		destDSNCmd[2] = destDSNCmd[2] + 1;
@@ -152,32 +147,27 @@ void writeDestDSN(uint8_t destDSN[]){
 
 // Gets the DSN of the NUB that the destination phone is connected to, also returns its device number and if it was found or not (in bytes 6,7)
 // after the dsn
-uint8_t *getDestPhoneAdd(uint8_t destPhoneAdd[7],uint8_t *myDSN, struct networkStructure network){
+uint8_t *getDestPhoneAdd(uint8_t destPhoneAdd[7],uint8_t *myDSN, struct networkStructure network) {
 	
 	uint8_t phoneFound = 0;
 	uint8_t *destDSN = (uint8_t*) malloc(sizeof(uint8_t)*5);
 	
-	
-	
 	// Looping through all devices in network to search for which device is connected to the desired phone
-	for (uint8_t deviceNum = 0; deviceNum < network.numOfDevices; deviceNum++)
-	{//1
+	for (uint8_t deviceNum = 0; deviceNum < network.numOfDevices; deviceNum++) {//1
 		
 		// Looping through all the connected phones of this specific NUB
-		for (uint8_t phoneConnection = 0; phoneConnection < network.device[deviceNum].numOfPhoneCon; phoneConnection++)
-		{//2
+		for (uint8_t phoneConnection = 0; phoneConnection < network.device[deviceNum].numOfPhoneCon; phoneConnection++) {//2
 			
 			// Comparing the destination MAC address to ones stored in network, if found assign device DSN to destination DSN
-			for (uint8_t i = 0; i < 6 ; i++)
-			{//3
-				if (destPhoneAdd[i] != network.device[deviceNum].phoneConnections[phoneConnection][i]){
+			for (uint8_t i = 0; i < 6 ; i++) {//3
+				if (destPhoneAdd[i] != network.device[deviceNum].phoneConnections[phoneConnection][i]) {
 					break;
 				}
-				if (i == 5){
+				if (i == 5) {
 					phoneFound = 1;
 					
 					destDSN[5] = deviceNum;			// To return with dsn address for easier lookup
-					for (uint8_t j = 0; j < 4; j++){
+					for (uint8_t j = 0; j < 4; j++) {
 						destDSN[j] = network.device[deviceNum].deviceDSN[j];
 					}
 					destDSN[6] = 0x01;
@@ -187,14 +177,14 @@ uint8_t *getDestPhoneAdd(uint8_t destPhoneAdd[7],uint8_t *myDSN, struct networkS
 		}//2		
 	}//1
 	
-	if(phoneFound != 1){
+	if(phoneFound != 1) {
 		destDSN[6] = 0xFF;
 		return destDSN;
 	}
 }
 
 
-void buildMsgPath(uint8_t destDeviceNum, uint8_t destDSN[4], uint8_t * myDSN, struct networkStructure network){
+void buildMsgPath(uint8_t destDeviceNum, uint8_t destDSN[4], uint8_t * myDSN, struct networkStructure network) {
 	// destDeviceNum: Number of the device in the network 
 	uint8_t msgPath[5][4];
 	
@@ -226,13 +216,13 @@ void buildMsgPath(uint8_t destDeviceNum, uint8_t destDSN[4], uint8_t * myDSN, st
 	uint8_t srcDeviceNum;
 	
 	// Getting source device number in network
-	for(uint8_t i = 0; i < network.numOfDevices; i++){
+	for(uint8_t i = 0; i < network.numOfDevices; i++) {
 		
-		for(uint8_t j = 0; j < 4; j++){
-			if (network.device[i].deviceDSN[j] != myDSN[j]){
+		for(uint8_t j = 0; j < 4; j++) {
+			if (network.device[i].deviceDSN[j] != myDSN[j]) {
 				break;
 			}
-			if (i == 3){
+			if (i == 3) {
 				srcDeviceNum = i;
 			}
 		}
@@ -242,20 +232,20 @@ void buildMsgPath(uint8_t destDeviceNum, uint8_t destDSN[4], uint8_t * myDSN, st
 	
 	
 	// Search destination device for direct connection to source first
-	for(uint8_t conNum = 0; conNum < network.device[srcDeviceNum].numOfNubCon; conNum ++){
+	for(uint8_t conNum = 0; conNum < network.device[srcDeviceNum].numOfNubCon; conNum ++) {
 		
 		
-		for (uint8_t i = 0; i < 4; i ++){	//Looping through connected nub DSN
+		for (uint8_t i = 0; i < 4; i ++) {	//Looping through connected nub DSN
 			
-			if (destDSN[i] != myDSN[i]){
+			if (destDSN[i] != myDSN[i]) {
 				break;
 			}
-			if(i >= 3){
+			if(i >= 3) {
 				pathFound = 1;
-				for (int j = 0; j< 4; j++){
+				for (int j = 0; j< 4; j++) {
 					msgPath[0][j] = myDSN[j];
 				}
-				for (int j = 0; j< 4; j++){
+				for (int j = 0; j< 4; j++) {
 					msgPath[1][j] = destDSN[j];
 				}
 				
@@ -264,16 +254,16 @@ void buildMsgPath(uint8_t destDeviceNum, uint8_t destDSN[4], uint8_t * myDSN, st
 	}
 	
 	
-	if (pathFound == 0){
+	if (pathFound == 0) {
 		
 		// Indexing all connection device numbers
-		for(uint8_t conNum = 0; conNum < network.device[srcDeviceNum].numOfNubCon; conNum++){
-			for(uint8_t deviceNum = 0; deviceNum < network.numOfDevices; deviceNum++){
-				for(uint8_t i = 0 ; i < 4; i++){
-					if(network.device[srcDeviceNum].nubConnections[conNum][i] != network.device[deviceNum].deviceDSN[i]){
+		for(uint8_t conNum = 0; conNum < network.device[srcDeviceNum].numOfNubCon; conNum++) {
+			for(uint8_t deviceNum = 0; deviceNum < network.numOfDevices; deviceNum++) {
+				for(uint8_t i = 0 ; i < 4; i++) {
+					if(network.device[srcDeviceNum].nubConnections[conNum][i] != network.device[deviceNum].deviceDSN[i]) {
 						break;
 					}
-					if (i > 3){
+					if (i > 3) {
 						currentNodeCon[index] = deviceNum;
 						index++;
 					}
@@ -281,14 +271,14 @@ void buildMsgPath(uint8_t destDeviceNum, uint8_t destDSN[4], uint8_t * myDSN, st
 			}
 		}
 		
-		for(uint8_t srcconNum = 0; srcconNum < network.device[srcDeviceNum].numOfNubCon; srcconNum++){
+		for(uint8_t srcconNum = 0; srcconNum < network.device[srcDeviceNum].numOfNubCon; srcconNum++) {
 			
-			for(uint8_t conNum = 0; conNum < network.device[currentNodeCon[srcconNum]].numOfNubCon; conNum++){
+			for(uint8_t conNum = 0; conNum < network.device[currentNodeCon[srcconNum]].numOfNubCon; conNum++) {
 				for( uint8_t i = 0; i < 4; i++){
-					if(network.device[currentNodeCon[srcconNum]].nubConnections[conNum][i] != network.device[srcDeviceNum].deviceDSN[i]){
+					if(network.device[currentNodeCon[srcconNum]].nubConnections[conNum][i] != network.device[srcDeviceNum].deviceDSN[i]) {
 						break;
 					}
-					if (i > 3){
+					if (i > 3) {
 						
 					}
 				}
@@ -304,7 +294,7 @@ void buildMsgPath(uint8_t destDeviceNum, uint8_t destDSN[4], uint8_t * myDSN, st
 
 // Sending a simple message
 void sendMessageSimple(uint8_t msgPathSize, uint8_t deviceNumInPath, uint8_t msgPath[],
-						uint8_t destPhoneAdd[6],uint8_t srcPhoneAdd[6], unsigned char msg[],uint8_t msgSize){
+						uint8_t destPhoneAdd[6],uint8_t srcPhoneAdd[6], unsigned char msg[],uint8_t msgSize) {
 	
 	
 	uint8_t msgType = 0x01;	// message
@@ -325,7 +315,7 @@ void sendMessageSimple(uint8_t msgPathSize, uint8_t deviceNumInPath, uint8_t msg
 }
 
 // Sends an acknowledge through HUMPRO back to NUB sender
-void sendAck(uint8_t srcDSN[], uint8_t destDSN[]){
+void sendAck(uint8_t srcDSN[], uint8_t destDSN[]) {
 	
 	uint8_t msgType = 0x04;			//Acknowledge
 	uint8_t msgHeader[] = {msgType,srcDSN[0],srcDSN[1],srcDSN[2],srcDSN[3]};
@@ -340,7 +330,7 @@ void sendAck(uint8_t srcDSN[], uint8_t destDSN[]){
 
 
 // Initial broadcast to connect to other devices
-void broadcastCon(uint8_t txPWR,uint8_t srcDSN[], uint8_t *networkPtr, uint16_t networkPtrSize){
+void broadcastCon(uint8_t txPWR,uint8_t srcDSN[], uint8_t *networkPtr, uint16_t networkPtrSize) {
 	PORTD &= ~(1 << CMD);	// cmd mode
 	uint8_t TXPower[4]	= {0xFF,0x02,0x02,txPWR};
 	TXWrite(TXPower,4,Transceiver);
@@ -353,7 +343,7 @@ void broadcastCon(uint8_t txPWR,uint8_t srcDSN[], uint8_t *networkPtr, uint16_t 
 	uint8_t msgHeader[] = {msgType,srcDSN[0],srcDSN[1],srcDSN[2],srcDSN[3]};
 	
 	
-	for (uint8_t i = 0; i < 4; i++){
+	for (uint8_t i = 0; i < 4; i++) {
 		TXWrite(destDSNCMD,5,Transceiver);
 		getChar(Transceiver);
 		destDSNCMD[2] = destDSNCMD[2] + 0x01;
@@ -371,7 +361,7 @@ void broadcastCon(uint8_t txPWR,uint8_t srcDSN[], uint8_t *networkPtr, uint16_t 
 
 
 // Compares the received network information from another NUB to local information
-void compareNetworks(struct networkStructure *network){
+void compareNetworks(struct networkStructure *network) {
 	/*
 	struct localConnections{
 		uint8_t deviceDSN[4];	
@@ -403,11 +393,11 @@ void compareNetworks(struct networkStructure *network){
 	uint8_t numOfDevicesInRx = getChar(Transceiver);
 	
 	// Setting a pointer to each device in the network structure currently stored in the rx buffer
-	for (uint16_t deviceNum = 0; deviceNum < numOfDevicesInRx; deviceNum ++){
+	for (uint16_t deviceNum = 0; deviceNum < numOfDevicesInRx; deviceNum ++) {
 		devicePtr = parseBufferForPtr(deviceNum * (6 + 4 * MAX_NUB_CON + 6 * MAX_PHONE_CON));	
 	}
 	
-	for (uint8_t deviceNum = 0; deviceNum < numOfDevicesInRx; deviceNum++){
+	for (uint8_t deviceNum = 0; deviceNum < numOfDevicesInRx; deviceNum++) {
 		
 		
 	}
@@ -416,7 +406,7 @@ void compareNetworks(struct networkStructure *network){
 	
 }
 
-void updateNetwork(struct networkStructure *network){
+void updateNetwork(struct networkStructure *network) {
 	
 }
 

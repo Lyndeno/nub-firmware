@@ -68,16 +68,16 @@ void init_buffer(circular_buf *buffer, size_t size) {
 }
 
 // Looking at next char
-uint8_t peekChar(uart_dev UARTPort){
+uint8_t peekChar(uart_dev UARTPort) {
 	uint8_t ret = '\0';
 	
-	if (UARTPort == Transceiver){
-		if (buff_trans_rx.head != buff_trans_rx.tail){
+	if (UARTPort == Transceiver) {
+		if (buff_trans_rx.head != buff_trans_rx.tail) {
 			ret = buff_trans_rx.buff[buff_trans_rx.head];
 		}
 	}
 	else if (UARTPort == WiFi) {
-		if (buff_wifi_rx.head != buff_wifi_rx.tail){
+		if (buff_wifi_rx.head != buff_wifi_rx.tail) {
 			ret = buff_wifi_rx.buff[buff_wifi_rx.head];
 		}
 	}
@@ -87,31 +87,31 @@ uint8_t peekChar(uart_dev UARTPort){
 
 // Getting each unsigned character
 // TODO: Replace this with read_buffer
-unsigned char getChar(uart_dev UARTPort){
+unsigned char getChar(uart_dev UARTPort) {
 	unsigned char ret = '\0';
 	
-	if ( UARTPort == Transceiver ){
+	if ( UARTPort == Transceiver ) {
 		
-		if (buff_trans_rx.head != buff_trans_rx.tail){
+		if (buff_trans_rx.head != buff_trans_rx.tail) {
 			//unread0Bytes--;
 			buff_trans_rx.free++;
 			ret = buff_trans_rx.buff[buff_trans_rx.head++];
 			//rx0ReadPos ++;
 
-			if (buff_trans_rx.head >= buff_trans_rx.size){
+			if (buff_trans_rx.head >= buff_trans_rx.size) {
 				buff_trans_rx.head = 0;
 			}
 		}
 	}
-	else if ( UARTPort == WiFi ){
+	else if ( UARTPort == WiFi ) {
 		
-		if (buff_wifi_rx.head != buff_wifi_rx.tail){
+		if (buff_wifi_rx.head != buff_wifi_rx.tail) {
 			//unread1Bytes--;
 			buff_wifi_rx.free++;
 			ret = buff_wifi_rx.buff[buff_wifi_rx.head++];
 			//rx1ReadPos ++;
 
-			if (buff_wifi_rx.head >= buff_wifi_rx.size){
+			if (buff_wifi_rx.head >= buff_wifi_rx.size) {
 				buff_wifi_rx.head = 0;
 			}
 		}
@@ -121,9 +121,9 @@ unsigned char getChar(uart_dev UARTPort){
 }
 
 // Skipping to the most current point in the buffer
-void skipBuffer(uart_dev UARTPort){
+void skipBuffer(uart_dev UARTPort) {
 	
-	if(UARTPort == Transceiver){
+	if(UARTPort == Transceiver) {
 		//unread0Bytes = 0;
 		buff_trans_rx.free = buff_trans_rx.size;
 		buff_trans_rx.head = buff_trans_rx.tail;
@@ -137,51 +137,51 @@ void skipBuffer(uart_dev UARTPort){
 }
 
 // Allows the program to jump through the rx0 (transceiver) buffer 
-uint8_t parseBufferForVal(int movePtr, uint16_t jmpToPos){
+uint8_t parseBufferForVal(int movePtr, uint16_t jmpToPos) {
 	
 	uint8_t returnChar;
 	// No jump to specific address, 
-	if (jmpToPos == 0){
+	if (jmpToPos == 0) {
 		if (buff_trans_rx.head + movePtr > buff_trans_rx.size){
 			buff_trans_rx.head = buff_trans_rx.head + movePtr - buff_trans_rx.size;
 		}
-		else{
+		else {
 			buff_trans_rx.head= buff_trans_rx.head + movePtr;
 		}
 		
 		returnChar = buff_trans_rx.buff[buff_trans_rx.head];
-		if (movePtr > 0){
+		if (movePtr > 0) {
 			//unread0Bytes = unread0Bytes - movePtr;
 			buff_trans_rx.free = buff_trans_rx.free + movePtr;
 		}
 		
 	}
 	
-	else{
+	else {
 		
 		// Jump to specific address then move read position 
-		if (jmpToPos < buff_trans_rx.head){
+		if (jmpToPos < buff_trans_rx.head) {
 			//unread0Bytes = RX0_BUFFER_SIZE - buff_trans_rx.head + jmpToPos;
 			buff_trans_rx.free = buff_trans_rx.head - jmpToPos;
 		}
-		else{
+		else {
 			//unread0Bytes = jmpToPos - buff_trans_rx.head;
 			buff_trans_rx.free = buff_trans_rx.size - jmpToPos + buff_trans_rx.head;
 		}
 		
 		buff_trans_rx.head = jmpToPos;
 		
-		if (buff_trans_rx.head + movePtr > buff_trans_rx.size){
+		if (buff_trans_rx.head + movePtr > buff_trans_rx.size) {
 			buff_trans_rx.head = buff_trans_rx.head + movePtr - buff_trans_rx.size;
 		}
-		else{
+		else {
 			buff_trans_rx.head = buff_trans_rx.head + movePtr;
 		}
 		
 		
 		returnChar = buff_trans_rx.buff[buff_trans_rx.head];
 		
-		if (movePtr > 0){
+		if (movePtr > 0) {
 			//unread0Bytes = unread0Bytes - movePtr;
 			buff_trans_rx.free = buff_trans_rx.size + movePtr;
 		}
@@ -192,13 +192,13 @@ uint8_t parseBufferForVal(int movePtr, uint16_t jmpToPos){
 }
 
 
-uint16_t  parseBufferForPtr(int movePtr){
+uint16_t  parseBufferForPtr(int movePtr) {
 	
 	
-	if (buff_trans_rx.head + movePtr > buff_trans_rx.size){
+	if (buff_trans_rx.head + movePtr > buff_trans_rx.size) {
 		return buff_trans_rx.head + movePtr - buff_trans_rx.size;
 	}
-	else{
+	else {
 		return buff_trans_rx.head + movePtr;
 	}
 	
