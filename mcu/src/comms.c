@@ -14,10 +14,6 @@
 
 #define PWRHUM		PORTE1
 
-extern rx0ReadPos;
-extern rx0WritePos;
-extern unread0Bytes;
-
 ISR(WIFI_RX_vect) {
     // when interrupt is triggered then write UDR into buffer so we do not lose information
     buff_wifi_rx.buff[buff_wifi_rx.tail++] = UDR_WIFI;
@@ -129,7 +125,9 @@ uint8_t * setupTransceiver(){
 	_delay_ms(100);
 	PORTB |= (1 <<PORTB6);
 	_delay_ms(1000);
-	rx0ReadPos = rx0WritePos;	// Ignoring reset message
+
+	//TODO: Should we clear the buffer and update the free value?
+	buff_trans_rx.head = buff_trans_rx.tail;	// Ignoring reset message
 	
 	PORTB |= (1 << PORTB7);		// PWR, norm operation
 	PORTD &= ~(1 << PORTD5);	// Command mode
@@ -177,32 +175,32 @@ uint8_t * setupTransceiver(){
 	
 	TXWrite(myDSN3,4,Transceiver);
 	_delay_ms(100);
-	while(unread0Bytes < 3);
+	while((buff_trans_rx.size - buff_trans_rx.free) < 3);
 	
-	rx0ReadPos = rx0WritePos -1;		// Ignoring other bytes received, only care about DSN value
+	buff_trans_rx.head = buff_trans_rx.tail - 1;		// Ignoring other bytes received, only care about DSN value
 
 	myDSNVal[0] = getChar(0);
 	
 	
 	TXWrite(myDSN2,4,Transceiver);
 	_delay_ms(100);
-	while(unread0Bytes < 3);
+	while((buff_trans_rx.size - buff_trans_rx.free) < 3);
 		
-	rx0ReadPos = rx0WritePos -1;
+	buff_trans_rx.head = buff_trans_rx.tail - 1;
 	myDSNVal[1] = getChar(0);
 	
 	
 	TXWrite(myDSN1,4,Transceiver);
 	_delay_ms(100);
-	while(unread0Bytes < 3);
-	rx0ReadPos = rx0WritePos -1;
+	while((buff_trans_rx.size - buff_trans_rx.free) < 3);
+	buff_trans_rx.head = buff_trans_rx.tail - 1;
 	myDSNVal[2] = getChar(0);
 	
 	
 	TXWrite(myDSN0,4,Transceiver);
 	_delay_ms(100);
-	while(unread0Bytes < 3);
-	rx0ReadPos = rx0WritePos -1;
+	while((buff_trans_rx.size - buff_trans_rx.free) < 3);
+	buff_trans_rx.head = buff_trans_rx.tail - 1;
 	myDSNVal[3] = getChar(0);
 	
 	_delay_ms(3000);
