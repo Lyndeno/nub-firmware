@@ -138,22 +138,23 @@ void skipBuffer(uart_dev UARTPort){
 	
 }
 
-// Allows the program to jump through the rx0 buffer 
+// Allows the program to jump through the rx0 (transceiver) buffer 
 uint8_t parseBufferForVal(int movePtr, uint16_t jmpToPos){
 	
 	uint8_t returnChar;
 	// No jump to specific address, 
 	if (jmpToPos == 0){
-		if (rx0ReadPos + movePtr > RX0_BUFFER_SIZE){
-			rx0ReadPos = rx0ReadPos + movePtr - RX0_BUFFER_SIZE;
+		if (buff_trans_rx.head + movePtr > buff_trans_rx.size){
+			buff_trans_rx.head = buff_trans_rx.head + movePtr - buff_trans_rx.size;
 		}
 		else{
-			rx0ReadPos= rx0ReadPos + movePtr;
+			buff_trans_rx.head= buff_trans_rx.head + movePtr;
 		}
 		
-		returnChar = rx0Buffer[rx0ReadPos];
+		returnChar = buff_trans_rx.buff[buff_trans_rx.head];
 		if (movePtr > 0){
-			unread0Bytes = unread0Bytes - movePtr;
+			//unread0Bytes = unread0Bytes - movePtr;
+			buff_trans_rx.free = buff_trans_rx.free + movePtr;
 		}
 		
 	}
@@ -161,27 +162,30 @@ uint8_t parseBufferForVal(int movePtr, uint16_t jmpToPos){
 	else{
 		
 		// Jump to specific address then move read position 
-		if (jmpToPos < rx0ReadPos){
-			unread0Bytes = RX0_BUFFER_SIZE - rx0ReadPos + jmpToPos;
+		if (jmpToPos < buff_trans_rx.head){
+			//unread0Bytes = RX0_BUFFER_SIZE - buff_trans_rx.head + jmpToPos;
+			buff_trans_rx.free = buff_trans_rx.head - jmpToPos;
 		}
 		else{
-			unread0Bytes = jmpToPos - rx0ReadPos;
+			//unread0Bytes = jmpToPos - buff_trans_rx.head;
+			buff_trans_rx.free = buff_trans_rx.size - jmpToPos + buff_trans_rx.head;
 		}
 		
-		rx0ReadPos = jmpToPos;
+		buff_trans_rx.head = jmpToPos;
 		
-		if (rx0ReadPos + movePtr > RX0_BUFFER_SIZE){
-			rx0ReadPos = rx0ReadPos + movePtr - RX0_BUFFER_SIZE;
+		if (buff_trans_rx.head + movePtr > buff_trans_rx.size){
+			buff_trans_rx.head = buff_trans_rx.head + movePtr - buff_trans_rx.size;
 		}
 		else{
-			rx0ReadPos = rx0ReadPos + movePtr;
+			buff_trans_rx.head = buff_trans_rx.head + movePtr;
 		}
 		
 		
-		returnChar = rx0Buffer[rx0ReadPos];
+		returnChar = buff_trans_rx.buff[buff_trans_rx.head];
 		
 		if (movePtr > 0){
-			unread0Bytes = unread0Bytes - movePtr;
+			//unread0Bytes = unread0Bytes - movePtr;
+			buff_trans_rx.free = buff_trans_rx.size + movePtr;
 		}
 	}
 	
@@ -193,11 +197,11 @@ uint8_t parseBufferForVal(int movePtr, uint16_t jmpToPos){
 uint16_t  parseBufferForPtr(int movePtr){
 	
 	
-	if (rx0ReadPos + movePtr > RX0_BUFFER_SIZE){
-		return rx0ReadPos + movePtr - RX0_BUFFER_SIZE;
+	if (buff_trans_rx.head + movePtr > buff_trans_rx.size){
+		return buff_trans_rx.head + movePtr - buff_trans_rx.size;
 	}
 	else{
-		return rx0ReadPos + movePtr;
+		return buff_trans_rx.head + movePtr;
 	}
 	
 }
