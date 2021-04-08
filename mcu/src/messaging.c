@@ -1,16 +1,12 @@
 #include <avr/delay.h>
 #include <avr/io.h>
-#include <stdio.h>
-#include <avr/interrupt.h>
 #include <stdlib.h>
+#include "messaging.h"
+#include "routing.h"
 #include "comms.h"
 #include "buffer.h"
 
 #define CMD			PORTD5
-
-#define MaxNetworkSize	5
-#define MAX_NUB_CON		3
-#define MAX_PHONE_CON	3
 
 extern myDSN;
 extern networkStructure;
@@ -23,7 +19,6 @@ struct localConnections {
 	uint8_t nubConnections[3][4];	// The DSN addresses of the connected devices
 	uint8_t phoneConnections[3][6];	// The mac addresses of connected phones
 };
-
 
 // Overall network structure, 175 Bytes
 struct networkStructure {

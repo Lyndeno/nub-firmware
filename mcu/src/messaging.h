@@ -1,6 +1,8 @@
 #ifndef MESSAGING_H
 #define MESSAGING_H
 
+#include <stdint.h>
+
 
 uint8_t handleMessages(uint8_t *myDSN);
 
