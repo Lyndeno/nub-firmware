@@ -47,13 +47,13 @@ uint8_t check_buffer(circular_buf * );
  */
 void init_buffer(circular_buf *, size_t);
 
-uint8_t peekChar(void);
+uint8_t peekChar(uart_dev UARTPort);
 
-unsigned char getChar(uint8_t UARTPort);
+unsigned char getChar(uart_dev UARTPort);
 
-void skipBuffer(void);
+void skipBuffer(uart_dev UARTPort);
 
-uint8_t parseBufferForVal(int movePointer);
+uint8_t parseBufferForVal(int movePointer, uint16_t jmpToPos);
 
 uint16_t parseBufferForPtr(int movePtr);
 
