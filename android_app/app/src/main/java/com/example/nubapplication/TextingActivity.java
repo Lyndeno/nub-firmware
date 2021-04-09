@@ -137,7 +137,7 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
 
 
 
-    // UDP Client Set Up
+    // UDP Client Setting Up
     private void MessageSend(final String message) {
 
         final Handler handler = new Handler();
