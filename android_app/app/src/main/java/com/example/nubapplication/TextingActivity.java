@@ -30,7 +30,7 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
     private TextView textResponse;
     private EditText Message;
     private Button sendbutton;
-    String IpAddress = "192.168.4.1";//Ip address of esp
+    String IpAddress = "172.31.230.21";//192.168.4.1";//Ip address of esp
     int Port = 3333;//Wifi Server Number to be filled out;
 
     Boolean turn;
@@ -65,7 +65,7 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
             }
         });
 
-        turn= true;
+        turn= false;
         context = this;
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
