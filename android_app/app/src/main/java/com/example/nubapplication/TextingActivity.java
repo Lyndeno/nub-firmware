@@ -153,7 +153,14 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
                     socket = new DatagramSocket();
                     InetAddress serverAddr = InetAddress.getByName(IpAddress);
                     DatagramPacket packet;
-                    packet = new DatagramPacket(message.getBytes(), message.length(), serverAddr, 3333);
+
+                    // Lyndon's test code
+                    byte[] message_array = new byte[message.length() + 1];
+                    System.arraycopy(message.getBytes(), 0, message_array, 1, message.length());
+                    message_array[0] = (byte)0x01;
+
+                    //packet = new DatagramPacket(message.getBytes(), message.length(), serverAddr, 3333);
+                    packet = new DatagramPacket(message_array, message_array.length, serverAddr, 3333);
                     socket.send(packet);
 
                     byte[] buf = new byte[4096];
