@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (turn) {
 
-            turnOnOffWifi(context, turn);
+            turnOnOffWifi(context, true);
             turn = false;
             Toast.makeText(getApplicationContext(), "turning on...", Toast.LENGTH_SHORT).show();
 
@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
         else {
-            turnOnOffWifi(context,turn);
+            turnOnOffWifi(context, false);
             turn = true;
             Toast.makeText(getApplicationContext(), "turning off...", Toast.LENGTH_SHORT).show();
         }
