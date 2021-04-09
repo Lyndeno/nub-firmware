@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 openTextingActivity();
+                wifi_connect();
             }
         });
 
@@ -48,13 +49,14 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+
     public void openTextingActivity() {
         android.content.Intent intent = new Intent(this, TextingActivity.class);
         startActivity(intent);
     }
 
 
-    public void wifi_connect (View v) {
+    public void wifi_connect() {
 
         wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 

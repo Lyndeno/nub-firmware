@@ -17,7 +17,6 @@
         android:layout_marginTop="448dp"
         android:layout_marginBottom="48dp"
         android:background="#48ce46"
-        android:onClick="wifi_connect"
         android:text="Connect to Device"
         android:textColor="#000000"
         app:layout_constraintBottom_toTopOf="@+id/imageView4"
@@ -66,25 +65,3 @@
         app:layout_constraintVertical_bias="0.52"
         app:srcCompat="@drawable/undraw_mobile_user_7oqo_1" />
 </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <!--
-    <?xml version="1.0" encoding="utf-8"?>
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical"
-        tools:context=".MainActivity">
-
-
-        <Button
-            android:id="@+id/connect_button"
-            android:layout_width="310dp"
-            android:layout_height="42dp"
-            android:background="#48ce46"
-            android:onClick="wifi_connect"
-            android:text="Connect to Device"
-            android:textColor="#000000" />
-        </RelativeLayout>-->

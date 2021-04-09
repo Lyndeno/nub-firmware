@@ -61,6 +61,7 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
             @Override
             public void onClick(View v) {
                 openMainActivity();
+                wifi_disconnect();
             }
         });
 
@@ -95,7 +96,7 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
 
 
     //Wifi Disconnecting Activity
-    public void wifi_disconnect (View v) {
+    public void wifi_disconnect () {
 
         wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 

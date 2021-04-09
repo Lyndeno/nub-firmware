@@ -51,7 +51,6 @@
         android:id="@+id/disconnect_button"
         android:layout_width="310dp"
         android:layout_height="42dp"
-        android:onClick="wifi_disconnect"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="500dp"
         android:background="#f03949"
