@@ -95,7 +95,7 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
 
 
 
-    //Wifi Disconnecting Activity
+    //Client Disconnecting Activity
     public void wifi_disconnect () {
 
         wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);

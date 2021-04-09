@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-
+// Client Connect Activity
     public void wifi_connect() {
 
         wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
