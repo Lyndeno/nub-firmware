@@ -244,6 +244,16 @@ struct sockaddr_in get_sock(uint8_t *mac) {
     //TODO: Handle no existing devices instead of returning that last one
 }
 
+bool check_table(uint8_t *mac) {
+    size_t i;
+    for (i = 0; i < ESP_WIFI_MAX_CONN; i++) {
+        if ( compare_MAC(mac, wifi_connection_table[i].mac) && wifi_connection_table[i].state == Connected ) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool compare_MAC (uint8_t *mac1, uint8_t *mac2) {
     bool match = true;
     for (size_t mac_index = 0; mac_index < MAC_LENGTH; mac_index++) {
