@@ -2,7 +2,7 @@
 #define BUFFER_H
 
 #define FRAME_LENGTH_MAX 256
-#define BUFFER_LENGTH_FRAMES 4 // number of frames
+#define BUFFER_LENGTH_FRAMES 2 // number of frames
 #define BUFFER_LENGTH_BYTES (BUFFER_LENGTH_FRAMES * FRAME_LENGTH_MAX)
 
 #include <stdint.h>
@@ -24,6 +24,7 @@ typedef struct circular_buf {
 } circular_buf;
 
 extern circular_buf buff_wifi_rx;
+extern circular_buf buff_trans_rx;
 
 /** 
  * Read a byte from a buffer as referenced by the head pointer. The byte in the buffer is then cleared before the head pointer is incremented.

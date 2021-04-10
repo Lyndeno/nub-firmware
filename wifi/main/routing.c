@@ -128,8 +128,8 @@ void handle_message_frame (message_frame *rx_frame) {
     tx_bytes.data[0] = 0x02; // NUB header
     tx_bytes.data[1] = 0x00; // data len
     tx_bytes.data[2] = 0x01; // msg type
-    tx_bytes.data[3] = (rx_frame->len - 1) >> 8; // first byte of length
-    tx_bytes.data[4] = (rx_frame->len - 1) & 0x00FF; // second byte of length
+    tx_bytes.data[3] = (uint8_t)((rx_frame->len - 1) >> 8); // first byte of length
+    tx_bytes.data[4] = (uint8_t)((rx_frame->len - 1) & 0x00FF); // second byte of length
 
     // send message to uart queue
     for (size_t i = 0; i < rx_frame->len - 1; i++) {
@@ -161,10 +161,33 @@ void handle_connection_frame (message_frame *rx_frame) {
     }
 }
 
+void connection_frame_mcu (wifi_device *mod_device) {
+    uart_frame tx_bytes;
+    tx_bytes.len = 10;
+    tx_bytes.data = pvPortMalloc(tx_bytes.len * sizeof(uint8_t));
+    tx_bytes.data[0] = 0x02;
+    tx_bytes.data[1] = 0x00;
+    tx_bytes.data[2] = 0x02;
+    switch (mod_device->state) {
+    case Connected:
+        tx_bytes.data[3] = 0x01;
+        break;
+    case Disconnected:
+        tx_bytes.data[3] = 0x02;
+        break;
+    default:
+        break;
+    }
+
+    copy_MAC(mod_device->mac, &(tx_bytes.data[4]));
+    xQueueSendToBack(q_uart_tx_bytes, &tx_bytes, portMAX_DELAY);
+}
+
 // Add/remove device from table and report to MCU
 void device_table_task (void *pvParameters) {
     q_wifi_state = xQueueCreate(32, sizeof(wifi_device));
     wifi_device new_state;
+    bool done;
 
     // initialize the device table
     for (size_t i = 0; i < ESP_WIFI_MAX_CONN; i++) {
@@ -181,11 +204,13 @@ void device_table_task (void *pvParameters) {
                  * TODO: Add handling for duplicate connection notices, i.e. same device sends connection frame twice.
                  * To prevent the table from filling up.
                  */ 
+                done = false;
                 for (size_t dev_index = 0; dev_index < ESP_WIFI_MAX_CONN; dev_index++) {
-                    if (wifi_connection_table[dev_index].state == Disconnected) {
+                    if (wifi_connection_table[dev_index].state == Disconnected && !done) {
                         copy_MAC(new_state.mac,wifi_connection_table[dev_index].mac);
                         wifi_connection_table[dev_index].netaddr = new_state.netaddr;
                         wifi_connection_table[dev_index].state = Connected;
+                        done = true;
                         //break; // TODO: Why does this cause a crash at boot???
                     }
                 }
@@ -199,6 +224,9 @@ void device_table_task (void *pvParameters) {
                 }
                 break;
             }
+
+            connection_frame_mcu(&new_state);
+
             vPortFree(new_state.mac);
         }
     }

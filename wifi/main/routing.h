@@ -77,6 +77,8 @@ void copy_MAC (uint8_t *mac_in, uint8_t *mac_out);
  */
 void handle_connection_frame (message_frame *rx_frame);
 
+void connection_frame_mcu (wifi_device *mod_device);
+
 /**
  * Get socket address information from MAC address
  * 
