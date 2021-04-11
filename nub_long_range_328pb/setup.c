@@ -1,3 +1,5 @@
+#define F_CPU 1000000UL
+
 #include <avr/delay.h>
 #include <avr/io.h>
 
@@ -66,17 +68,17 @@ uint8_t * setupTransceiver(){
 	
 	
 	//DDRD &= ~(1 << DDD0);	//PD2 Buffer empty status (high when buffer is empty) input
-	//DDRD &= ~(1 << DDD4);	//PD3 Exception status
+	DDRD |= (1 << DDD3);	//PD3 "PUSH button" PULL LOW
 	DDRD |= (1 << DDD5);	//PD5 CMD_BAR (high for data transmit, low for commands)
 	
-	
+	PORTD &= ~(1<< PORTD3);
 	PORTB &= ~(1 << PORTB6);		// Reset norm operation
 	_delay_ms(100);
 	PORTB |= (1 <<PORTB6);
 	_delay_ms(1000);
 	rx0ReadPos = rx0WritePos;	// Ignoring reset message
 	
-	PORTB |= (1 << PORTB7);		// PWR, norm operation
+	
 	PORTD &= ~(1 << PORTD5);	// Command mode
 	
 	
@@ -96,24 +98,24 @@ uint8_t * setupTransceiver(){
 	
 	// Send all defined commands through uart
 	//TX0Write(hopTable[0],4);
-	delay_ms(50);
-	TXWrite(TXPower[0],4,0);
-	delay_ms(50);
-	getChar(0);
+	//delay_ms(50);
+	//TXWrite(TXPower,4,0);
+	//delay_ms(50);
+	//getChar(0);
 	//TX0Write(UARTBaud[0],4);
 	
 	
-	TXWrite(addMode,4,0);
-	delay_ms(50);
-	getChar(0);
+	//TXWrite(addMode,4,0);
+	//delay_ms(50);
+	//getChar(0);
 	
 	//TX0Write(showVer[0],4);
-	TXWrite(CMDHold,4,0);
-	delay_ms(50);
-	getChar(0);
-	TXWrite(compat,4,0);
-	delay_ms(50);
-	getChar(0);
+	//TXWrite(CMDHold,4,0);
+	//delay_ms(50);
+	//getChar(0);
+	//TXWrite(compat,4,0);
+	//delay_ms(50);
+	//getChar(0);
 	//TX0Write(autoAdd[0],4);
 	
 	

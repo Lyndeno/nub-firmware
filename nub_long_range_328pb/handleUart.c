@@ -23,7 +23,7 @@ unsigned char rx1BufferPointer = 0;
 
 uint16_t unread0Bytes = 0;
 uint16_t unread1Bytes = 0;
-
+uint8_t newPacket = 0;
 
 
 
@@ -206,7 +206,6 @@ uint8_t parseBufferForVal(int movePtr, uint16_t jmpToPos){
 
 uint16_t  parseBufferForPtr(int movePtr){
 	
-	
 	if (rx0ReadPos + movePtr > RX0_BUFFER_SIZE){
 		return rx0ReadPos + movePtr - RX0_BUFFER_SIZE;
 	}
@@ -215,6 +214,22 @@ uint16_t  parseBufferForPtr(int movePtr){
 	}
 	
 }
+
+uint16_t BytesUnRead(){
+	return unread0Bytes;
+}
+
+uint8_t uartReady(){
+	if((PINC & (1 << PINC4)) == (1 << PINC4)){
+		return 1;
+	}
+	else{
+		return 0;
+	}
+}
+
+
+
 
 // Interrupt for receiving UART data from RX 0
 ISR(USART0_RX_vect){
@@ -239,6 +254,4 @@ ISR(USART1_RX_vect){
 	{
 		rx1WritePos = 0;
 	}
-	
-	
 }
