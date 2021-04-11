@@ -99,26 +99,33 @@ int main(void)
 	
 	myDSN = setupTransceiver();
 	
+	
+	
 	uint8_t value = 0x00;
 	for (uint8_t i = 0; i < sizeof(network); i++){
 		*(networkPtr2 + i*sizeof(uint8_t))  = value;
 	}
-	
+	// Mostly test stuff ////////////////////////////////////////////////
 	for(int i = 0; i < 4; i++){
 		myCons.myDSN[i] = myDSN[i];
 		network.device[0].deviceDSN[i] = myDSN[i];
+		network.device[1].deviceDSN[i] = 0x11;
 	}
 	
 	for(int i = 0; i <6; i++){
 		myCons.myPhoneConnections[0][i] = 0x22;
 		network.device[0].phoneConnections[0][i] = 0x22;
+		network.device[1].phoneConnections[0][i] = 0x33;
 	}
+	
 	
 	myCons.myNumOfNubCon = 0;
 	myCons.myNumOfPhoneCon = 1;
-	network.numOfDevices = 1;
+	network.numOfDevices = 2;
 	network.device[0].numOfNubCon = 0;
 	network.device[0].numOfPhoneCon = 1;
+	network.device[1].numOfPhoneCon = 1;
+	//////////////////////////////////////////////////////////////////
 	
 	uint8_t firstCon = 1;
 	skipBuffer(0);
@@ -134,20 +141,23 @@ int main(void)
 		
 		//broadcastCon(0x01,networkPtr);
 		//sendMessageSimple(myDSN,connectedDevices,var,6);
-		
-		if(BytesUnRead() > 0){
-			
-			handleMessages(myCons.myDSN,networkPtr,networkSize,networkPtr2,myConsptr);
+		uint8_t UARTPort = 1;
+		if(Bytes0UnRead() > 0){
+			UARTPort = 0;
+			handleMessages(UARTPort,networkPtr,networkSize,networkPtr2,myConsptr);
 			firstCon = 0;
 			
 			skipBuffer();
-			
+		}
+		if(Bytes1UnRead() > 0){
+			UARTPort = 1;
+			handleMessages(UARTPort,networkPtr,networkSize,networkPtr2,myConsptr);
 		}
 		
 		//checkReg();
 		//test();
-		
-		_delay_ms(100);
+		//TXWrite("Hello",5,1);
+		_delay_ms(1000);
 		
     }
 }
@@ -156,7 +166,8 @@ int main(void)
 void checkReg(){
 	
 	uint8_t hopTable[4]	= {0xFF,0x02,0x00,0x00};
-	uint8_t TXPower[4]	= {0xFF,0x02,0x4D,0x01};		// Setting the power to 25dBm for initial search/ default value
+	uint8_t TXPower[4]	= {0xFF,0x02,0x4D,0x01};		// Setting the power to 25dBm for initial search/ default 
+		
 	uint8_t UARTBaud[4]	= {0xFF,0x02,0x03,0x02};		// Setting BAUD rate to 19.2 kb/s ( also means this is the transmission speed)
 	uint8_t addMode[4]	= {0xFF,0x02,0x4F,0x04};		// Setting address mode as DSN (Volatile address)
 	uint8_t showVer[4]	= {0xFF,0x02,0x0A,0x00};		// Do not show version at start up

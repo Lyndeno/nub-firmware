@@ -215,8 +215,11 @@ uint16_t  parseBufferForPtr(int movePtr){
 	
 }
 
-uint16_t BytesUnRead(){
+uint16_t Bytes0UnRead(){
 	return unread0Bytes;
+}
+uint16_t Bytes1UnRead(){
+	return unread1Bytes;
 }
 
 uint8_t uartReady(){

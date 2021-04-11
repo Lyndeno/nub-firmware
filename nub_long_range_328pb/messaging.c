@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include "handleUart.h"
 
+
 #define RSTHUM		PORTB6
 #define MODEIND		PORTB7
 
@@ -22,6 +23,8 @@
 
 extern myDSN;
 extern unread0Bytes;
+
+
 
 // The specific device connections, 35 Bytes
 struct localConnections{
@@ -51,221 +54,47 @@ struct myConData{
 };
 
 			  
-
-
-
-uint8_t handleMessages(uint8_t *myDSN, struct networkStructure *networkPtr, uint16_t sizeOfNetwork, uint8_t *networkPtr2, struct myConData* myCons){
+uint8_t* getDestPhoneAdd(uint8_t destPhoneAdd[6],uint8_t myDSN[], struct networkStructure* network){
 	
-	uint8_t value;
-	uint8_t msgType = (uint8_t) getChar(0);		// Message type is stored as the first byte
-	
-	uint8_t sourceDSN[4];
-	// Message that HUMPRO received over air
+	uint8_t phoneFound = 0;
+	uint8_t *destDSN = (uint8_t*) malloc(sizeof(uint8_t)*4);
 	
 	
-	if (msgType == 0x01){
-		// [msgType (1 byte), deviceNumInPath (1 byte), msgPathSize (1 byte), msgSize (1 byte), 
-		//  msgPath (var), destination phone address (6 bytes), source phone address (6 bytes), message (var)]
-		
-		uint8_t deviceNumInPath = getChar(0) + 1;		// Increment to this device
-		uint8_t msgPathSize = getChar(0);
-		uint8_t msgSize = getChar(0);
-		uint8_t msg[msgSize];
-		uint8_t msgPath[msgPathSize*4];
-		for (uint8_t i = 0; i < msgPathSize*4; i ++){
-			msgPath[i] = getChar(0);
-		}
-		
-		uint8_t destPhoneAdd[6];
-		for (uint8_t i = 0; i < 6; i ++){
-			destPhoneAdd[i] = getChar(0);
-		}
 	
-		uint8_t srcPhoneAdd[6];
-		for (uint8_t i = 0; i < 6; i ++){
-			srcPhoneAdd[i] = getChar(0);
-		}
-		for (uint8_t i = 0; i < msgSize; i++){
-			msg[i] = getChar(0);
-		}
+	// Looping through all devices in network to search for which device is connected to the desired phone
+	for (uint8_t deviceNum = 0; deviceNum < network->numOfDevices; deviceNum++)
+	{//1
 		
-		// Seeing if the this device is the last in the path, if so send message data to esp to be transmitted to the phone
-		if (deviceNumInPath == msgPathSize){
-			uint8_t espMsg[] = {msgType,destPhoneAdd,srcPhoneAdd,msgSize,msg};
-			TXWrite(espMsg,sizeof(espMsg),1);
-		}
-		
-		// If not pass along the message to the next NUB device
-		else{
-			uint8_t msgHeader[] = {msgType,deviceNumInPath,msgPathSize,msgSize};
-	
-			writeDestDSN(msgPath[deviceNumInPath + 1]);		// The next devices DSN
-	
-			// Send [msgType (1 byte), deviceNumInPath (1 byte), msgPathSize (1 byte), msgSize (1 byte), 
-			//       msgPath (var), destination phone address (6 bytes), source phone address (6 bytes), message (var)]
-	
-			TXWrite(msgHeader,sizeof(msgHeader),0);
-			TXWrite(msgPath,msgPathSize*4,0);
-			TXWrite(destPhoneAdd,6,0);			// mac address
-			TXWrite(srcPhoneAdd,6,0);			// mac address
-	
-			TXWrite(msg, msgSize,0);
-		
-			sendAck(myDSN,sourceDSN);
-			}
-	}
-	if (msgType == 0x03){												// Network adjustment 
-		
-		sourceDSN[0] = (uint8_t) getChar(0);
-		sourceDSN[1] = (uint8_t) getChar(0);
-		sourceDSN[2] = (uint8_t) getChar(0);
-		sourceDSN[3] = (uint8_t) getChar(0);
-		uint16_t networkSize = getChar(0);
-		uint8_t newCon = getChar(0);
-		// Received message format: {msgType,myDSN[0],myDSN[1],myDSN[2],myDSN[3],networkSize,newCon,networkPtr};
-		
-		uint8_t sendToNeighbors = 1;
-		
-		updateNetworks(networkPtr,sizeOfNetwork,networkPtr2,myCons,newCon);
-		
-
-		// If network has been updated send to connected devices
-		if (sendToNeighbors == 0){
-			TXWrite("AAAAAAAAAAA",10,0);
-			TXWrite(networkPtr,sizeOfNetwork,0);
-			for (uint8_t deviceNum = 0; deviceNum < myCons->myNumOfNubCon; deviceNum ++){
-				writeDestDSN(myCons->myNubConnections[deviceNum]);
-				TXWrite(networkPtr,sizeOfNetwork,0);
-			}
-			return 1;
-		}
-		else{
-			return 0;
-		}
-		
-	}
-	
-	// Acknowledgment received
-	if(msgType == 0x04){
-		TXWrite(0x16,1,0);
-		return 0x04;													// Will change later when checking connections
-	}
-	
-	// Trying to connect
-	if(msgType == 0x05){
-		
-		// Just sent myData, add to structure and send structure
-		uint8_t sizeOfMessage;
-		uint8_t deviceFound = 0;
-		sizeOfMessage = getChar(0);
-		sourceDSN[0] = getChar(0); 
-		sourceDSN[1] = getChar(0); 
-		sourceDSN[2] = getChar(0); 
-		sourceDSN[3] = getChar(0); 
-		
-		
-		if ((networkPtr->numOfDevices < MaxNetworkSize) & (myCons->myNumOfNubCon < MAX_NUB_CON)){	// Making sure there is room
-			for (uint8_t deviceNum = 0; deviceNum < networkPtr->numOfDevices; deviceNum++){
-				for( uint8_t i = 0; i < 4; i++){
-					if (sourceDSN[i] != networkPtr->device[deviceNum].deviceDSN[i]){break;}
-					if (i >= 3){
-						deviceFound = 1;
-					}
-				}
-				uint8_t nubConnections[MAX_NUB_CON][4];	// The DSN addresses of the connected devices
-				uint8_t phoneConnections[MAX_PHONE_CON][6];	// The mac addresses of connected phones
-				// Device has been found in current network structure, update it with the new data
-				if (deviceFound == 1){
-					for (uint16_t j = 0; j < sizeOfMessage; j++){
-						*(networkPtr2 + 1 + DEVICESIZE*deviceNum +  j*sizeof(uint8_t) + 4) = getChar(0);
-					}
-					
-				}
-			}
-			// Adding device data to the next empty place in the network
-			if (deviceFound == 0){
-				uint8_t message[sizeOfMessage];
-				
-				*(networkPtr2 + 1 + DEVICESIZE * networkPtr->numOfDevices + 0) = sourceDSN[0];
-				*(networkPtr2 + 1 + DEVICESIZE * networkPtr->numOfDevices + 1) = sourceDSN[1];
-				*(networkPtr2 + 1 + DEVICESIZE * networkPtr->numOfDevices + 2) = sourceDSN[2];
-				*(networkPtr2 + 1 + DEVICESIZE * networkPtr->numOfDevices + 3) = sourceDSN[3];
-				for (uint16_t j = 0; j < sizeOfMessage; j++){
-					_delay_ms(10);
-					*(networkPtr2 + 1 + DEVICESIZE * networkPtr->numOfDevices + j*sizeof(uint8_t) + 4) = getChar(0);
-					
-				}
-				// Adding this devices dsn to newly connected device connection list
-				for (uint8_t j = 0; j < 4; j++){
-					networkPtr->device[networkPtr->numOfDevices].nubConnections[networkPtr->device[networkPtr->numOfDevices].numOfNubCon][j] = myCons->myDSN[j];
-				}
-				networkPtr->numOfDevices++;
-				
-			}
+		// Looping through all the connected phones of this specific NUB
+		for (uint8_t phoneConnection = 0; phoneConnection < network->device[deviceNum].numOfPhoneCon; phoneConnection++)
+		{//2
 			
-			// Adding local device to connection list of new device and updating local connection list
-			deviceFound = 0;
-			for (uint8_t deviceNum = 0; deviceNum < networkPtr->numOfDevices; deviceNum++){
-				for( uint8_t i = 0; i < 4; i++){
-					if (sourceDSN[i] != networkPtr->device[deviceNum].deviceDSN[i]){break;}
-					if (i >= 3){
-						deviceFound = 1;
-					}
-				}
-				if (deviceFound == 1){
-					for (uint8_t i = 0; i < 4; i++){
-						networkPtr->device[deviceNum].nubConnections[networkPtr->device[deviceNum].numOfNubCon][i] = myCons->myDSN[i];
-						myCons->myNubConnections[myCons->myNumOfNubCon][i] = sourceDSN[i];
-					}
-					myCons->myNumOfNubCon ++;
-					networkPtr->device[deviceNum].numOfNubCon ++;
-					
-					
-					// In the next two loops it searches for its own dsn to add the new connection to its list in the network
-					deviceFound = 0;
-					for (uint8_t myDeviceNum = 0; myDeviceNum < networkPtr->numOfDevices; myDeviceNum++){
-						for( uint8_t i = 0; i < 4; i++){
-							if (myCons->myDSN[i] != networkPtr->device[myDeviceNum].deviceDSN[i]){break;}
-							if (i >= 3){
-								deviceFound = 1;
-							}
-						}
-						
-						
-						if (deviceFound == 1){
-							for (uint16_t j = 0; j < 4; j++){
-								networkPtr->device[myDeviceNum].nubConnections[myCons->myNumOfNubCon - 1][j] = networkPtr->device[deviceNum].deviceDSN[j];
-								
-							}
-							
-							networkPtr->device[myDeviceNum].numOfNubCon ++;
-							break;
-
-						}
-					}
+			// Comparing the destination MAC address to ones stored in network, if found assign device DSN to destination DSN
+			for (uint8_t i = 0; i < 6 ; i++)
+			{//3
+				if (destPhoneAdd[i] != network->device[deviceNum].phoneConnections[phoneConnection][i]){
 					break;
 				}
-			}
-
-			
-			sendNetworkData(networkPtr,sizeOfNetwork,myCons->myDSN,sourceDSN,1);
-			return 1;
-		}
-		else{
-			return 0;
-		}
+				if (i >= 5){
+					phoneFound = 1;
+					for (uint8_t j = 0; j < 4; j++){
+						destDSN[j] = network->device[deviceNum].deviceDSN[j];
+						
+					}
+					TXWrite(destDSN,4,1);
+					return destDSN;
+				}
+			}//3
+		}//2
+	}//1
+	
+	if(phoneFound != 1){
+		destDSN[6] = 0xFF;
+		return destDSN;
 	}
-	
-	
-	// Ack from Humpro after command is sent
-	if (msgType == 0x06){
-		uint8_t regNum		= (uint8_t) getChar(0);
-		uint8_t regValue	= (uint8_t) getChar(0);
-		return regValue;
-	}
-	// Message from Humpro
-	
 }
+
+
 
 
 
@@ -289,48 +118,9 @@ void writeDestDSN(uint8_t destDSN[]){
 
 // Gets the DSN of the NUB that the destination phone is connected to, also returns its device number and if it was found or not (in bytes 6,7)
 // after the dsn
-uint8_t *getDestPhoneAdd(uint8_t destPhoneAdd[7],uint8_t *myDSN, struct networkStructure network){
-	
-	uint8_t phoneFound = 0;
-	uint8_t *destDSN = (uint8_t*) malloc(sizeof(uint8_t)*5);
-	
-	
-	
-	// Looping through all devices in network to search for which device is connected to the desired phone
-	for (uint8_t deviceNum = 0; deviceNum < network.numOfDevices; deviceNum++)
-	{//1
-		
-		// Looping through all the connected phones of this specific NUB
-		for (uint8_t phoneConnection = 0; phoneConnection < network.device[deviceNum].numOfPhoneCon; phoneConnection++)
-		{//2
-			
-			// Comparing the destination MAC address to ones stored in network, if found assign device DSN to destination DSN
-			for (uint8_t i = 0; i < 6 ; i++)
-			{//3
-				if (destPhoneAdd[i] != network.device[deviceNum].phoneConnections[phoneConnection][i]){
-					break;
-				}
-				if (i == 5){
-					phoneFound = 1;
-					
-					destDSN[5] = deviceNum;			// To return with dsn address for easier lookup
-					for (uint8_t j = 0; j < 4; j++){
-						destDSN[j] = network.device[deviceNum].deviceDSN[j];
-					}
-					destDSN[6] = 0x01;
-					return destDSN;
-				}
-			}//3	
-		}//2		
-	}//1
-	
-	if(phoneFound != 1){
-		destDSN[6] = 0xFF;
-		return destDSN;
-	}
-}
 
 
+// STILL NEEDS WORK ***************
 void buildMsgPath(uint8_t destDeviceNum, uint8_t destDSN[4], uint8_t * myDSN, struct networkStructure network){
 	// destDeviceNum: Number of the device in the network 
 	uint8_t msgPath[5][4];
@@ -743,3 +533,250 @@ int findDeviceNum(uint8_t DSN[], struct networkStructure* networkPtr){
 	return -1;
 	
 }
+
+
+uint8_t handleMessages(uint8_t UARTPort, struct networkStructure *networkPtr, uint16_t sizeOfNetwork, uint8_t *networkPtr2, struct myConData* myCons){
+	
+	uint8_t msgType;
+	
+	if (UARTPort == 0){
+		msgType = getChar(0);		// Message type is stored as the first byte
+	}
+	else{
+		getChar(1);
+		getChar(1);
+		msgType = getChar(1);
+	}
+	
+	uint8_t sourceDSN[4];
+	// Message that HUMPRO received over air
+	
+	
+	if (msgType == 0x01){
+		// [msgType (1 byte), deviceNumInPath (1 byte), msgPathSize (1 byte), msgSize (1 byte),
+		//  msgPath (var), destination phone address (6 bytes), source phone address (6 bytes), message (var)]
+		
+		if (UARTPort == 0){
+			uint8_t deviceNumInPath = getChar(0) + 1;		// Increment to this device
+			uint8_t msgPathSize = getChar(0);
+			uint8_t msgSize = getChar(0);
+			uint8_t msg[msgSize];
+			uint8_t msgPath[msgPathSize*4];
+			for (uint8_t i = 0; i < msgPathSize*4; i ++){
+				msgPath[i] = getChar(0);
+			}
+			
+			uint8_t destPhoneAdd[6];
+			for (uint8_t i = 0; i < 6; i ++){
+				destPhoneAdd[i] = getChar(0);
+			}
+			
+			uint8_t srcPhoneAdd[6];
+			for (uint8_t i = 0; i < 6; i ++){
+				srcPhoneAdd[i] = getChar(0);
+			}
+			for (uint8_t i = 0; i < msgSize; i++){
+				msg[i] = getChar(0);
+			}
+			
+			// Seeing if the this device is the last in the path, if so send message data to esp to be transmitted to the phone
+			if (deviceNumInPath == msgPathSize){
+				uint8_t espMsg[] = {msgType,destPhoneAdd,srcPhoneAdd,msgSize,msg};
+				TXWrite(espMsg,sizeof(espMsg),1);
+			}
+			
+			// If not pass along the message to the next NUB device
+			else{
+				uint8_t msgHeader[] = {msgType,deviceNumInPath,msgPathSize,msgSize};
+				
+				writeDestDSN(msgPath[deviceNumInPath + 1]);		// The next devices DSN
+				
+				// Send [msgType (1 byte), deviceNumInPath (1 byte), msgPathSize (1 byte), msgSize (1 byte),
+				//       msgPath (var), destination phone address (6 bytes), source phone address (6 bytes), message (var)]
+				
+				TXWrite(msgHeader,sizeof(msgHeader),0);
+				TXWrite(msgPath,msgPathSize*4,0);
+				TXWrite(destPhoneAdd,6,0);			// mac address
+				TXWrite(srcPhoneAdd,6,0);			// mac address
+				
+				TXWrite(msg, msgSize,0);
+				
+				sendAck(myCons->myDSN,sourceDSN);
+			}
+		}
+		// If Message from esp
+		else{
+			// Format 0x02,0x00,msgType,msg length,dest mac, source mac, message
+			//                         /Starting here from this point
+			uint8_t msgLen = getChar(1);	// Just 1 byte for now
+			uint8_t destAdd[6];
+			uint8_t srcAdd[6];
+			uint8_t* destDSN;
+			for (uint8_t i = 0; i < 12; i++){
+				if (i < 6){
+					destAdd[i] = getChar(1);
+				}
+				else{
+					srcAdd[i-6] = getChar(1);
+				}
+			}
+			
+			destDSN = getDestPhoneAdd(destAdd,myCons->myDSN,networkPtr2);
+			
+		}
+		
+	}
+	if (msgType == 0x03){												// Network adjustment
+		
+		sourceDSN[0] = (uint8_t) getChar(0);
+		sourceDSN[1] = (uint8_t) getChar(0);
+		sourceDSN[2] = (uint8_t) getChar(0);
+		sourceDSN[3] = (uint8_t) getChar(0);
+		uint16_t networkSize = getChar(0);
+		uint8_t newCon = getChar(0);
+		// Received message format: {msgType,myDSN[0],myDSN[1],myDSN[2],myDSN[3],networkSize,newCon,networkPtr};
+		
+		uint8_t sendToNeighbors = 1;
+		
+		updateNetworks(networkPtr,sizeOfNetwork,networkPtr2,myCons,newCon);
+		
+
+		// If network has been updated send to connected devices
+		if (sendToNeighbors == 0){
+			TXWrite("AAAAAAAAAAA",10,0);
+			TXWrite(networkPtr,sizeOfNetwork,0);
+			for (uint8_t deviceNum = 0; deviceNum < myCons->myNumOfNubCon; deviceNum ++){
+				writeDestDSN(myCons->myNubConnections[deviceNum]);
+				TXWrite(networkPtr,sizeOfNetwork,0);
+			}
+			
+			return 1;
+		}
+		else{
+			return 0;
+		}
+		
+	}
+	
+	// Acknowledgment received
+	if(msgType == 0x04){
+		TXWrite(0x16,1,0);
+		return 0x04;													// Will change later when checking connections
+	}
+	
+	// Trying to connect
+	if(msgType == 0x05){
+		
+		// Just sent myData, add to structure and send structure
+		uint8_t sizeOfMessage;
+		uint8_t deviceFound = 0;
+		sizeOfMessage = getChar(0);
+		sourceDSN[0] = getChar(0);
+		sourceDSN[1] = getChar(0);
+		sourceDSN[2] = getChar(0);
+		sourceDSN[3] = getChar(0);
+		
+		
+		if ((networkPtr->numOfDevices < MaxNetworkSize) & (myCons->myNumOfNubCon < MAX_NUB_CON)){	// Making sure there is room
+			for (uint8_t deviceNum = 0; deviceNum < networkPtr->numOfDevices; deviceNum++){
+				for( uint8_t i = 0; i < 4; i++){
+					if (sourceDSN[i] != networkPtr->device[deviceNum].deviceDSN[i]){break;}
+					if (i >= 3){
+						deviceFound = 1;
+					}
+				}
+				uint8_t nubConnections[MAX_NUB_CON][4];	// The DSN addresses of the connected devices
+				uint8_t phoneConnections[MAX_PHONE_CON][6];	// The mac addresses of connected phones
+				// Device has been found in current network structure, update it with the new data
+				if (deviceFound == 1){
+					for (uint16_t j = 0; j < sizeOfMessage; j++){
+						*(networkPtr2 + 1 + DEVICESIZE*deviceNum +  j*sizeof(uint8_t) + 4) = getChar(0);
+					}
+					
+				}
+			}
+			// Adding device data to the next empty place in the network
+			if (deviceFound == 0){
+				uint8_t message[sizeOfMessage];
+				
+				*(networkPtr2 + 1 + DEVICESIZE * networkPtr->numOfDevices + 0) = sourceDSN[0];
+				*(networkPtr2 + 1 + DEVICESIZE * networkPtr->numOfDevices + 1) = sourceDSN[1];
+				*(networkPtr2 + 1 + DEVICESIZE * networkPtr->numOfDevices + 2) = sourceDSN[2];
+				*(networkPtr2 + 1 + DEVICESIZE * networkPtr->numOfDevices + 3) = sourceDSN[3];
+				for (uint16_t j = 0; j < sizeOfMessage; j++){
+					_delay_ms(10);
+					*(networkPtr2 + 1 + DEVICESIZE * networkPtr->numOfDevices + j*sizeof(uint8_t) + 4) = getChar(0);
+					
+				}
+				// Adding this devices dsn to newly connected device connection list
+				for (uint8_t j = 0; j < 4; j++){
+					networkPtr->device[networkPtr->numOfDevices].nubConnections[networkPtr->device[networkPtr->numOfDevices].numOfNubCon][j] = myCons->myDSN[j];
+				}
+				networkPtr->numOfDevices++;
+				
+			}
+			
+			// Adding local device to connection list of new device and updating local connection list
+			deviceFound = 0;
+			for (uint8_t deviceNum = 0; deviceNum < networkPtr->numOfDevices; deviceNum++){
+				for( uint8_t i = 0; i < 4; i++){
+					if (sourceDSN[i] != networkPtr->device[deviceNum].deviceDSN[i]){break;}
+					if (i >= 3){
+						deviceFound = 1;
+					}
+				}
+				if (deviceFound == 1){
+					for (uint8_t i = 0; i < 4; i++){
+						networkPtr->device[deviceNum].nubConnections[networkPtr->device[deviceNum].numOfNubCon][i] = myCons->myDSN[i];
+						myCons->myNubConnections[myCons->myNumOfNubCon][i] = sourceDSN[i];
+					}
+					myCons->myNumOfNubCon ++;
+					networkPtr->device[deviceNum].numOfNubCon ++;
+					
+					
+					// In the next two loops it searches for its own dsn to add the new connection to its list in the network
+					deviceFound = 0;
+					for (uint8_t myDeviceNum = 0; myDeviceNum < networkPtr->numOfDevices; myDeviceNum++){
+						for( uint8_t i = 0; i < 4; i++){
+							if (myCons->myDSN[i] != networkPtr->device[myDeviceNum].deviceDSN[i]){break;}
+							if (i >= 3){
+								deviceFound = 1;
+							}
+						}
+						
+						
+						if (deviceFound == 1){
+							for (uint16_t j = 0; j < 4; j++){
+								networkPtr->device[myDeviceNum].nubConnections[myCons->myNumOfNubCon - 1][j] = networkPtr->device[deviceNum].deviceDSN[j];
+								
+							}
+							
+							networkPtr->device[myDeviceNum].numOfNubCon ++;
+							break;
+
+						}
+					}
+					break;
+				}
+			}
+
+			
+			sendNetworkData(networkPtr,sizeOfNetwork,myCons->myDSN,sourceDSN,1);
+			return 1;
+		}
+		else{
+			return 0;
+		}
+	}
+	
+	
+	// Ack from Humpro after command is sent
+	if (msgType == 0x06){
+		uint8_t regNum		= (uint8_t) getChar(0);
+		uint8_t regValue	= (uint8_t) getChar(0);
+		return regValue;
+	}
+	// Message from Humpro
+	
+}
+
