@@ -15,7 +15,8 @@
         android:layout_alignParentTop="true"
         android:layout_marginBottom="8dp"
         android:hint="Recipient Number"
-        android:inputType="number" />
+        android:digits="0123456789ABCDEF"
+        android:inputType="textCapCharacters" />
 
     <EditText
         android:id="@+id/message"
@@ -36,6 +37,14 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_marginTop="310dp" />
+
+    <TextView
+        android:id="@+id/sender_mac"
+        android:layout_width="match_parent"
+        android:layout_height="42dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="143dp" />
 
     <Button
         android:id="@+id/sendMessage"

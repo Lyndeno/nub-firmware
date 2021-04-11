@@ -4,11 +4,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiEnterpriseConfig;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 public class MainActivity extends AppCompatActivity {
 
     private Button connect_button;
+    private TextView SenderMAC;
 
     Boolean turn;
     static WifiManager wifiManager;
@@ -31,7 +34,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        SenderMAC = (TextView) findViewById(R.id.sender_mac);
         connect_button = (Button) findViewById(R.id.connect_button);
+
+        WifiManager manager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        WifiInfo info = manager.getConnectionInfo();
+        String mac_address = info.getMacAddress();
+        SenderMAC.setText("\n   YOUR MAC ADDRESS : " + mac_address);
+
+
         connect_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

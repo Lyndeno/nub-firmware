@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -26,11 +27,14 @@ import java.net.SocketException;
 public class TextingActivity extends AppCompatActivity implements View.OnClickListener {
 
     // Initializing Variables
+
     private Button disconnect_button;
     private TextView textResponse;
+    private TextView SenderMac;
     private EditText Message;
+    private EditText Recipient;
     private Button sendbutton;
-    String IpAddress = "172.31.230.21";//192.168.4.1";//Ip address of esp
+    String IpAddress = "192.168.4.1";//Ip address of esp
     int Port = 3333;//Wifi Server Number to be filled out;
 
     Boolean turn;
@@ -51,7 +55,9 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
         sendbutton = (Button) findViewById(R.id.sendMessage);
         textResponse = (TextView) findViewById(R.id.Response);
         Message = (EditText) findViewById(R.id.message);
+        Recipient = (EditText) findViewById(R.id.number);
         disconnect_button = (Button) findViewById(R.id.disconnect_button);
+        SenderMac = (TextView) findViewById(R.id.sender_mac);
 
         sendbutton.setOnClickListener(this);
 
@@ -149,18 +155,38 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
             @Override
             public void run() {
 
+                // Retrieving Mac Address to a string
+                WifiManager manager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                WifiInfo info = manager.getConnectionInfo();
+                String mac_address = info.getMacAddress();
+                String recipient_mac = Recipient.getText().toString();
+                SenderMac.setText("\n   YOUR MAC ADDRESS : " + mac_address);
+
+
+
+                // Socket Client Set Up
                 DatagramSocket socket = null;
                 try {
                     socket = new DatagramSocket();
                     InetAddress serverAddr = InetAddress.getByName(IpAddress);
                     DatagramPacket packet;
 
-                    // Lyndon's test code
-                    byte[] message_array = new byte[message.length() + 1];
-                    System.arraycopy(message.getBytes(), 0, message_array, 1, message.length());
+                    // set the first byte
+                    byte[] message_array = new byte[1024];
                     message_array[0] = (byte)0x01;
 
-                    //packet = new DatagramPacket(message.getBytes(), message.length(), serverAddr, 3333);
+                    // set the second byte
+                    message_array[1] = (byte)0x02;
+
+                    // attach the recipient mac address
+                    System.arraycopy(recipient_mac.getBytes(),0, message_array, 2, mac_address.length());
+
+                    // attach the sender mac address
+                    System.arraycopy(mac_address.getBytes(), 0, message_array, 8, mac_address.length());
+
+                    // Attaching and sending message
+                    System.arraycopy(message.getBytes(), 0, message_array, 14, message.length());
+
                     packet = new DatagramPacket(message_array, message_array.length, serverAddr, 3333);
                     socket.send(packet);
 
@@ -184,7 +210,7 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
                     public void run() {
                         String s = textResponse.getText().toString();
                         if (stringData.trim().length() != 0)
-                            textResponse.setText(s + "\nServer Reply : " + stringData);
+                            textResponse.setText(s + "\n    Server Reply : " + stringData);
                     }
                 });
 
