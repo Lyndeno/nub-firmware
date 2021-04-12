@@ -15,6 +15,12 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
 
     private Button connect_button;
@@ -37,9 +43,8 @@ public class MainActivity extends AppCompatActivity {
         SenderMAC = (TextView) findViewById(R.id.sender_mac);
         connect_button = (Button) findViewById(R.id.connect_button);
 
-        WifiManager manager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        WifiInfo info = manager.getConnectionInfo();
-        String mac_address = info.getMacAddress();
+
+        String mac_address = getMacAddress();
         SenderMAC.setText("\n   YOUR MAC ADDRESS : " + mac_address);
 
 
@@ -66,7 +71,8 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-// Client Connect Activity
+
+// Wifi Connect/Disconnect Activity
     public void wifi_connect() {
 
         wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
@@ -104,6 +110,43 @@ public class MainActivity extends AppCompatActivity {
     public static void turnOnOffWifi(Context context, boolean isTurnToOn) {
         wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         wifiManager.setWifiEnabled(isTurnToOn);
+    }
+
+
+
+    // Getting MAC address of device
+    public String getMacAddress(){
+        try{
+            List<NetworkInterface> networkInterfaceList = Collections.list(NetworkInterface.getNetworkInterfaces());
+
+            String stringMac = "";
+
+            for(java.net.NetworkInterface networkInterface : networkInterfaceList)
+            {
+                if(networkInterface.getName().equalsIgnoreCase("wlon0"));
+                {
+                    for(int i = 0 ;i <networkInterface.getHardwareAddress().length; i++){
+                        String stringMacByte = Integer.toHexString(networkInterface.getHardwareAddress()[i]& 0xFF);
+
+                        if(stringMacByte.length() == 1)
+                        {
+                            stringMacByte = "0" +stringMacByte;
+                        }
+
+                        stringMac = stringMac + stringMacByte.toUpperCase() + ":";
+                    }
+                    break;
+                }
+
+            }
+            return stringMac;
+        }
+        catch (SocketException e)
+        {
+            e.printStackTrace();
+        }
+
+        return  "0";
     }
 
 }
