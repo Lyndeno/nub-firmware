@@ -3,6 +3,7 @@ package com.example.nubapplication;
 import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -41,10 +42,7 @@ public class MainActivity extends AppCompatActivity {
         connect_button = (Button) findViewById(R.id.connect_button);
 
 
-        String mac_address = (String) getMacAddress();
-        SenderMAC.setText("\n   YOUR MAC ADDRESS : " + mac_address);
-
-
+    //Mac Address of sender
         connect_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -111,40 +109,6 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    // Getting MAC address of device
-    public Object getMacAddress(){
-        try{
-            List<NetworkInterface> networkInterfaceList = Collections.list(NetworkInterface.getNetworkInterfaces());
 
-            String stringMac = "";
-
-            for(java.net.NetworkInterface networkInterface : networkInterfaceList)
-            {
-                networkInterface.getName();
-                {
-                    for(int i = 0 ;i < networkInterface.getHardwareAddress().length; i++){
-                        String stringMacByte = Integer.toHexString(networkInterface.getHardwareAddress()[i]& 0xFF);
-
-                        if(stringMacByte.length() == 1)
-                        {
-                            stringMacByte = "0" +stringMacByte;
-                        }
-
-                        stringMac = stringMac + stringMacByte.toUpperCase() + ":";
-                    }
-                    break;
-                }
-
-            }
-            return stringMac;
-        }
-        catch (SocketException e)
-        {
-            e.printStackTrace();
-        }
-
-
-        return null;
-    }
 
 }

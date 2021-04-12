@@ -30,7 +30,7 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
 
     private Button disconnect_button;
     private TextView textResponse;
-    private TextView SenderMac;
+    private EditText SenderMac;
     private EditText Message;
     private EditText Recipient;
     private Button sendbutton;
@@ -57,7 +57,8 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
         Message = (EditText) findViewById(R.id.message);
         Recipient = (EditText) findViewById(R.id.number);
         disconnect_button = (Button) findViewById(R.id.disconnect_button);
-        SenderMac = (TextView) findViewById(R.id.sender_mac);
+        SenderMac = (EditText) findViewById(R.id.sender_mac);
+
 
         sendbutton.setOnClickListener(this);
 
@@ -156,11 +157,26 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
             public void run() {
 
                 // Retrieving Mac Address to a string
-                WifiManager manager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                WifiInfo info = manager.getConnectionInfo();
-                String mac_address = info.getMacAddress();
+
+                String mac_address = SenderMac.getText().toString();
                 String recipient_mac = Recipient.getText().toString();
-                SenderMac.setText("\n   YOUR MAC ADDRESS : " + mac_address);
+
+                String[] sendermac_address = mac_address.split(":");
+                String[] recipientmac_address = recipient_mac.split(":");
+
+// convert hex string to byte values
+                Byte[] sendermacAddressBytes = new Byte[6];
+                for(int i=0; i<6; i++){
+                    Integer hex = Integer.parseInt(sendermac_address[i], 16);
+                    sendermacAddressBytes[i] = hex.byteValue();
+                }
+
+                Byte[] recipientmacAddressBytes = new Byte[6];
+                for(int j=0; j<6; j++){
+                    Integer hex2 = Integer.parseInt(recipientmac_address[j], 16);
+                    recipientmacAddressBytes[j] = hex2.byteValue();
+                }
+
 
 
 
@@ -179,10 +195,10 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
                     message_array[1] = (byte)0x02;
 
                     // attach the recipient mac address
-                    System.arraycopy(recipient_mac.getBytes(),0, message_array, 2, mac_address.length());
+                    System.arraycopy(recipientmacAddressBytes,0, message_array, 2, mac_address.length());
 
                     // attach the sender mac address
-                    System.arraycopy(mac_address.getBytes(), 0, message_array, 8, mac_address.length());
+                    System.arraycopy(sendermacAddressBytes, 0, message_array, 8, mac_address.length());
 
                     // Attaching and sending message
                     System.arraycopy(message.getBytes(), 0, message_array, 14, message.length());
