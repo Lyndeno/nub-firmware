@@ -42,7 +42,7 @@
         android:id="@+id/sender_mac"
         android:layout_width="match_parent"
         android:layout_height="70dp"
-        android:hint="Type Your MAC Address. It is located in Settings> About> Status> Wi-Fi MAC Address"
+        android:hint="Type Your MAC Address. It is located in Settings> About> Status> Wi-Fi MAC Address."
         android:gravity="top"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
