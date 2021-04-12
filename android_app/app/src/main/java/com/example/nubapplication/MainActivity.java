@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
         connect_button = (Button) findViewById(R.id.connect_button);
 
 
-        String mac_address = getMacAddress();
+        String mac_address = (String) getMacAddress();
         SenderMAC.setText("\n   YOUR MAC ADDRESS : " + mac_address);
 
 
@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     // Getting MAC address of device
-    public String getMacAddress(){
+    public Object getMacAddress(){
         try{
             List<NetworkInterface> networkInterfaceList = Collections.list(NetworkInterface.getNetworkInterfaces());
 
@@ -120,9 +120,9 @@ public class MainActivity extends AppCompatActivity {
 
             for(java.net.NetworkInterface networkInterface : networkInterfaceList)
             {
-                if(networkInterface.getName().equalsIgnoreCase("wlon0"));
+                networkInterface.getName();
                 {
-                    for(int i = 0 ;i <networkInterface.getHardwareAddress().length; i++){
+                    for(int i = 0 ;i < networkInterface.getHardwareAddress().length; i++){
                         String stringMacByte = Integer.toHexString(networkInterface.getHardwareAddress()[i]& 0xFF);
 
                         if(stringMacByte.length() == 1)
