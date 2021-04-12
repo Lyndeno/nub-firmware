@@ -43,7 +43,7 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
     WifiConfiguration conf;
     public static String networkSSID = "NUB";
     public static String networkPass = "capstone1234";
-    byte[] buf = new byte[1024];
+
 
 
 
@@ -165,13 +165,13 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
                 String[] recipientmac_address = recipient_mac.split(":");
 
 // convert hex string to byte values
-                Byte[] sendermacAddressBytes = new Byte[6];
+                byte[] sendermacAddressBytes = new byte[6];
                 for(int i=0; i<6; i++){
                     Integer hex = Integer.parseInt(sendermac_address[i], 16);
                     sendermacAddressBytes[i] = hex.byteValue();
                 }
 
-                Byte[] recipientmacAddressBytes = new Byte[6];
+                byte[] recipientmacAddressBytes = new byte[6];
                 for(int j=0; j<6; j++){
                     Integer hex2 = Integer.parseInt(recipientmac_address[j], 16);
                     recipientmacAddressBytes[j] = hex2.byteValue();
@@ -191,14 +191,14 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
                     byte[] message_array = new byte[1024];
                     message_array[0] = (byte)0x01;
 
-                    // set the second byte
+                    // set the second byte for connect/disconnect activity
                     message_array[1] = (byte)0x02;
 
                     // attach the recipient mac address
-                    System.arraycopy(recipientmacAddressBytes,0, message_array, 2, mac_address.length());
+                    System.arraycopy(recipientmacAddressBytes,0, message_array, 2, recipientmacAddressBytes.length);
 
                     // attach the sender mac address
-                    System.arraycopy(sendermacAddressBytes, 0, message_array, 8, mac_address.length());
+                    System.arraycopy(sendermacAddressBytes, 0, message_array, 8, sendermacAddressBytes.length);
 
                     // Attaching and sending message
                     System.arraycopy(message.getBytes(), 0, message_array, 14, message.length());
