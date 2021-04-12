@@ -3,8 +3,6 @@ package com.example.nubapplication;
 import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.WifiConfiguration;
-import android.net.wifi.WifiEnterpriseConfig;
-import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -17,7 +15,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -108,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public static void turnOnOffWifi(Context context, boolean isTurnToOn) {
-        wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiManager.setWifiEnabled(isTurnToOn);
     }
 
@@ -146,7 +143,8 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        return  "0";
+
+        return null;
     }
 
 }
