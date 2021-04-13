@@ -46,7 +46,7 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
     public static String networkPass = "capstone1234";
     public DatagramSocket socket;
     public InetAddress serverAddr;
-    public Boolean ESPNotified = false;
+    public Boolean ESPNotified;
 
 
 
@@ -62,6 +62,8 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
         Recipient = (EditText) findViewById(R.id.number);
         disconnect_button = (Button) findViewById(R.id.disconnect_button);
         SenderMac = (EditText) findViewById(R.id.sender_mac);
+
+        ESPNotified = false;
 
         socket = null;
         try {
@@ -199,12 +201,12 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
 
                     DatagramPacket packet;
 
-                    if (ESPNotified == false) {
+                    if (!ESPNotified) {
                         byte[] connection_status = new byte[8];
                         connection_status[0] = (byte)0x02;
                         connection_status[1] = (byte)0x01;
 
-                        System.arraycopy(sendermacAddressBytes, 0, connection_status, 2, recipientmacAddressBytes.length);
+                        System.arraycopy(sendermacAddressBytes, 0, connection_status, 2, sendermacAddressBytes.length);
                         DatagramPacket connection_packet = new DatagramPacket(connection_status, connection_status.length, serverAddr, 3333);
 
                         socket.send(connection_packet);
@@ -212,7 +214,8 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
                     }
 
                     // set the first byte
-                    byte[] message_array = new byte[1024];
+                    //byte[] message_array = new byte[1024];
+                    byte[] message_array = new byte[message.getBytes().length + 2 + 12];
                     message_array[0] = (byte)0x01;
 
                     // set the second byte for connect/disconnect activity
