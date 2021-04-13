@@ -3,19 +3,26 @@ package com.example.nubapplication;
 import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.WifiConfiguration;
-import android.net.wifi.WifiEnterpriseConfig;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Collections;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
 
     private Button connect_button;
+    private TextView SenderMAC;
 
     Boolean turn;
     static WifiManager wifiManager;
@@ -31,11 +38,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        SenderMAC = (TextView) findViewById(R.id.sender_mac);
         connect_button = (Button) findViewById(R.id.connect_button);
+
+
+    //Mac Address of sender
         connect_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 openTextingActivity();
+                wifi_connect();
             }
         });
 
@@ -48,19 +60,21 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+
     public void openTextingActivity() {
         android.content.Intent intent = new Intent(this, TextingActivity.class);
         startActivity(intent);
     }
 
 
-    public void wifi_connect (View v) {
+// Wifi Connect/Disconnect Activity
+    public void wifi_connect() {
 
         wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 
         if (turn) {
 
-            turnOnOffWifi(context, turn);
+            turnOnOffWifi(context, true);
             turn = false;
             Toast.makeText(getApplicationContext(), "turning on...", Toast.LENGTH_SHORT).show();
 
@@ -81,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
         else {
-            turnOnOffWifi(context,turn);
+            turnOnOffWifi(context, false);
             turn = true;
             Toast.makeText(getApplicationContext(), "turning off...", Toast.LENGTH_SHORT).show();
         }
@@ -89,8 +103,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public static void turnOnOffWifi(Context context, boolean isTurnToOn) {
-        wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiManager.setWifiEnabled(isTurnToOn);
     }
+
+
+
+
 
 }
