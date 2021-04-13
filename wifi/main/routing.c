@@ -124,7 +124,7 @@ void handle_frames_task (void *pvParameters) {
 void handle_message_frame (message_frame *rx_frame) {
     if ( check_table(&(rx_frame->data[1])) ) {
         rx_frame->devaddr = get_sock(&(rx_frame->data[1]));
-        xQueueSendToBack(q_wifi_tx_frames, &rx_frame, portMAX_DELAY);
+        xQueueSendToBack(q_wifi_tx_frames, rx_frame, portMAX_DELAY);
     } else {
         uart_frame tx_bytes;
         tx_bytes.len = rx_frame->len + 5 - 1; // 5 bytes before message starts minus message header
