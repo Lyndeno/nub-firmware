@@ -101,7 +101,7 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
 
                 System.arraycopy(sendermacAddressBytes, 0, connection_status, 2, sendermacAddressBytes.length);
                 DatagramPacket connection_packet = new DatagramPacket(connection_status, connection_status.length, serverAddr, 3333);
-                
+
                 try {
                     socket.send(connection_packet);
                 }
@@ -204,7 +204,7 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
 
                     String s = textResponse.getText().toString();
                     if (received.trim().length() != 0)
-                        textResponse.setText(s + "\n    Server Reply : " + received);
+                        textResponse.setText("Server Reply : " + received.substring(13) + "\n" + s);
                 }
                 catch (IOException e) {
                     e.printStackTrace();
