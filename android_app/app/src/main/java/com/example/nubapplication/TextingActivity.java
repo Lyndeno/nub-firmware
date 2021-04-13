@@ -208,6 +208,7 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
                         DatagramPacket connection_packet = new DatagramPacket(connection_status, connection_status.length, serverAddr, 3333);
 
                         socket.send(connection_packet);
+                        ESPNotified = true;
                     }
 
                     // set the first byte
