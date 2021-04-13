@@ -11,6 +11,7 @@ import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -45,6 +46,7 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
     public static String networkPass = "capstone1234";
     public DatagramSocket socket;
     public InetAddress serverAddr;
+    public Boolean ESPNotified = false;
 
 
 
@@ -196,6 +198,17 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
                 try {
 
                     DatagramPacket packet;
+
+                    if (ESPNotified == false) {
+                        byte[] connection_status = new byte[8];
+                        connection_status[0] = (byte)0x02;
+                        connection_status[1] = (byte)0x01;
+
+                        System.arraycopy(sendermacAddressBytes, 0, connection_status, 2, recipientmacAddressBytes.length);
+                        DatagramPacket connection_packet = new DatagramPacket(connection_status, connection_status.length, serverAddr, 3333);
+
+                        socket.send(connection_packet);
+                    }
 
                     // set the first byte
                     byte[] message_array = new byte[1024];
