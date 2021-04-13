@@ -21,41 +21,11 @@ unsigned char rx1WritePos = 0;
 unsigned char rx1BufferPointer = 0;
 
 
-uint16_t unread0Bytes = 0;
-uint16_t unread1Bytes = 0;
+uint8_t unread0Bytes = 0;
+uint8_t unread1Bytes = 0;
 uint8_t newPacket = 0;
 
 
-
-
-/*
-// Taking input characters of size size and sending them through the UART0 TX
-void TX0Write(unsigned char c[], uint8_t size, uint16_t prePos ){
-	// C[]: the array of bytes to send, size: the size of the message (up to 256 bytes),
-	// prePos: the position in c[] that has already been previously been transmitted
-	// Writing entered information to transmit buffer
-	for ( int i = 0 ; i < size; i++){
-		
-		tx0Buffer[tx0WritePos] = c[i + prePos];
-		tx0WritePos++;
-		// Implementing a circular buffer
-		if (tx0WritePos >= TX_BUFFER_SIZE){
-			tx0WritePos = 0;
-		}
-	}
-	
-	// Writing to the transmit port the amount of characters defined by size
-	while (tx0ReadPos != tx0WritePos){
-		while (!(UCSR0A & (1<<UDRE0)));
-		UDR0 = tx0Buffer[tx0ReadPos];
-		tx0ReadPos ++;
-		if (tx0ReadPos >= TX_BUFFER_SIZE){
-			tx0ReadPos++;
-		}
-	}
-	
-}
-*/
 
 
 // Taking input characters of size size and sending them through the UART TX without storing the values in a buffer first
@@ -215,10 +185,11 @@ uint16_t  parseBufferForPtr(int movePtr){
 	
 }
 
-uint16_t Bytes0UnRead(){
+uint8_t Bytes0UnRead(){
+	
 	return unread0Bytes;
 }
-uint16_t Bytes1UnRead(){
+uint8_t Bytes1UnRead(){
 	return unread1Bytes;
 }
 

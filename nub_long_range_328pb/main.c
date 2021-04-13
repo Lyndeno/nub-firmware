@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include "setup.h"
 #include "messaging.h"
-
+#include "handleUart.h"
 
 #define RSTHUM		PORTB6
 #define MODEIND		PORTB7
@@ -38,7 +38,7 @@
 
 
 extern rx0Buffer;
-extern rx0WritePos;
+
 #define RX_BUFFER_SIZE 256
 #define TX_BUFFER_SIZE 256
 
@@ -87,7 +87,7 @@ int main(void)
 	USART_setup(MYUBRR);
 	sei();		// Enabling interrupts 
 	
-	uint8_t var[] = "hello\n";
+	
 	_delay_ms(100);
 	uint8_t *myDSN;
 	struct networkStructure *networkPtr, network;
@@ -109,55 +109,85 @@ int main(void)
 	for(int i = 0; i < 4; i++){
 		myCons.myDSN[i] = myDSN[i];
 		network.device[0].deviceDSN[i] = myDSN[i];
-		network.device[1].deviceDSN[i] = 0x11;
+		//network.device[1].deviceDSN[i] = 0x66;
+		//network.device[2].deviceDSN[i] = 0x77;
+		
+		//myCons.myNubConnections[myCons.myNumOfNubCon][i] = network.device[1].deviceDSN[i];
+		//network.device[0].nubConnections[0][i] = network.device[1].deviceDSN[i];
+		
+		//network.device[1].nubConnections[0][i] = network.device[0].deviceDSN[i];	// Connected to this one
+		//network.device[1].nubConnections[1][i] = network.device[2].deviceDSN[i];	// Connected to the other one
+		
+		//network.device[2].nubConnections[0][i] = network.device[1].deviceDSN[i];
+		
 	}
 	
 	for(int i = 0; i <6; i++){
-		myCons.myPhoneConnections[0][i] = 0x22;
-		network.device[0].phoneConnections[0][i] = 0x22;
-		network.device[1].phoneConnections[0][i] = 0x33;
+		myCons.myPhoneConnections[0][i] = 0x11;	// Just giving it a default value, 
+		network.device[0].phoneConnections[0][i] = myCons.myPhoneConnections[0][i];
+		//network.device[1].phoneConnections[0][i] = 0x33;
+		//network.device[2].phoneConnections[0][i] = 0x44;
 	}
 	
 	
-	myCons.myNumOfNubCon = 0;
+	myConsptr->myNumOfNubCon = 0;
 	myCons.myNumOfPhoneCon = 1;
-	network.numOfDevices = 2;
-	network.device[0].numOfNubCon = 0;
-	network.device[0].numOfPhoneCon = 1;
-	network.device[1].numOfPhoneCon = 1;
+	network.numOfDevices = 1;
+	network.device[0].numOfNubCon = myCons.myNumOfNubCon;	
+	network.device[0].numOfPhoneCon = myCons.myNumOfPhoneCon;	
+	
+	//network.device[1].numOfNubCon = 2;
+	//network.device[2].numOfNubCon = 1;
+	//network.device[0].numOfPhoneCon = 1;
+	//network.device[1].numOfPhoneCon = 1;
+	//network.device[2].numOfPhoneCon = 1;
+	uint8_t output = 0;
 	//////////////////////////////////////////////////////////////////
 	
 	uint8_t firstCon = 1;
 	skipBuffer(0);
 	
-    while (1){
-	
-		//TXWrite(var,6,0);
-		//TXWrite(networkPtr,sizeof(network),0);
+	uint8_t i = 0;
+	uint8_t UARTPort;
+    while (1){		
+		
 		if (firstCon == 1){
-			_delay_ms(5000);
+			
 			broadcastCon(0x00,myConsptr);
+			
+			_delay_ms(7500);
 		}
 		
-		//broadcastCon(0x01,networkPtr);
-		//sendMessageSimple(myDSN,connectedDevices,var,6);
-		uint8_t UARTPort = 1;
+		
 		if(Bytes0UnRead() > 0){
 			UARTPort = 0;
-			handleMessages(UARTPort,networkPtr,networkSize,networkPtr2,myConsptr);
-			firstCon = 0;
 			
-			skipBuffer();
+			output = handleMessages(UARTPort,networkPtr,networkSize,networkPtr2,myConsptr);
+			if (output == 3 || output == 5){
+				firstCon = 0;
+			}
+			
+			skipBuffer(0);
 		}
 		if(Bytes1UnRead() > 0){
 			UARTPort = 1;
 			handleMessages(UARTPort,networkPtr,networkSize,networkPtr2,myConsptr);
+			skipBuffer(1);
+			TXWrite(networkPtr,networkSize,1);
 		}
+		
 		
 		//checkReg();
 		//test();
-		//TXWrite("Hello",5,1);
-		_delay_ms(1000);
+		/*
+		i++;
+		if (i > 100){
+			
+			TXWrite(networkPtr,sizeof(network),1);
+			i = 0;
+		}
+		*/
+		_delay_ms(100);
 		
     }
 }

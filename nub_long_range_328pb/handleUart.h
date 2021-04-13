@@ -7,11 +7,11 @@ uint8_t peekChar(void);
 
 unsigned char getChar(uint8_t UARTPort);
 
-void skipBuffer(void);
+void skipBuffer(uint8_t uartPort);
 
 uint8_t parseBufferForVal(int movePointer);
-uint16_t Bytes0UnRead();
-uint16_t Bytes1UnRead();
+uint8_t Bytes0UnRead();
+uint8_t Bytes1UnRead();
 uint16_t parseBufferForPtr(int movePtr);
 
 uint8_t uartReady();
