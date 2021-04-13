@@ -1,12 +1,14 @@
 #include <avr/io.h>
 
 #ifndef F_CPU
-#define F_CPU 16000000UL
+#define F_CPU 1000000UL
 #endif
 
 #ifndef FOSC
-#define FOSC 16000000UL
+#define FOSC 1000000UL
 #endif
+
+#include <util/delay.h>
 
 #ifndef LIBIO_H
 #define LIBIO_H

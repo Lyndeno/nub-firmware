@@ -1,9 +1,10 @@
-#include <avr/delay.h>
+#include "io.h"
+//#include <avr/delay.h>
 #include <avr/io.h>
 #include <stdio.h>
 #include <avr/interrupt.h>
 #include <stdlib.h>
-#include "handleUart.h"
+//#include "handleUart.h"
 
 
 #define RSTHUM		PORTB6

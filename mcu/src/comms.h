@@ -50,6 +50,28 @@ void UART_WiFi_init(unsigned int);
 void UART_WiFi_TX (uint8_t);
 void UART_TRANS_TX (uint8_t byte);
 
+uint8_t * setupTransceiver();
+
+
+void USART_setup(unsigned int ubrr);
+
+void delay_ms(int t);
+
+void TXWrite(unsigned char c[], uint8_t size, uint16_t uartPort );
+
+uint8_t peekChar(uint8_t);
+
+unsigned char getChar(uint8_t UARTPort);
+
+void skipBuffer(uint8_t uartPort);
+
+//uint8_t parseBufferForVal(int movePointer, uint16_t);
+uint8_t Bytes0UnRead();
+uint8_t Bytes1UnRead();
+//uint16_t parseBufferForPtr(int movePtr, uint16_t);
+
+uint8_t uartReady();
+
 
 
 #endif
