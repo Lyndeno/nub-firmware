@@ -9,10 +9,10 @@ unsigned char getChar(uint8_t UARTPort);
 
 void skipBuffer(uint8_t uartPort);
 
-uint8_t parseBufferForVal(int movePointer);
+
 uint8_t Bytes0UnRead();
 uint8_t Bytes1UnRead();
-uint16_t parseBufferForPtr(int movePtr);
+
 
 uint8_t uartReady();
 

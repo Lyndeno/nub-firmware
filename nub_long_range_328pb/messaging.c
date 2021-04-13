@@ -204,13 +204,13 @@ uint8_t* buildMsgPath( uint8_t destDSN[4], struct networkStructure *network, str
 
 // Sending a simple message
 void sendMessageSimple(uint8_t msgPathSize, uint8_t deviceNumInPath, uint8_t msgPath[],
-						uint8_t destPhoneAdd[6],uint8_t srcPhoneAdd[6], unsigned char msg[],uint8_t msgSize){
+						uint8_t destPhoneAdd[6],uint8_t srcPhoneAdd[6], unsigned char msg[],uint16_t* msgSize){
 	
 	
 	uint8_t msgType = 0x01;	// message
-	uint8_t msgHeader[] = {msgType,deviceNumInPath,msgPathSize,msgSize};
-	
-	writeDestDSN(msgPath[deviceNumInPath + 1]);		// The next devices DSN
+	uint8_t msgHeader[] = {msgType,deviceNumInPath,msgPathSize,*msgSize};
+	uint8_t DSN[] = {0x0A,0x00,0x12,0xF0};
+	writeDestDSN(DSN);		// The next devices DSN
 	
 	// Send [msgType (1 byte), deviceNumInPath (1 byte), msgPathSize (1 byte), msgSize (1 byte), 
 	//       msgPath (var), destination phone address (6 bytes), source phone address (6 bytes), message (var)]
@@ -220,7 +220,7 @@ void sendMessageSimple(uint8_t msgPathSize, uint8_t deviceNumInPath, uint8_t msg
 	TXWrite(destPhoneAdd,6,0);			// mac address
 	TXWrite(srcPhoneAdd,6,0);			// mac address
 	
-	TXWrite(msg, msgSize,0);
+	TXWrite(msg, *msgSize,0);
 	
 }
 
@@ -390,7 +390,6 @@ uint8_t updateNetworks(struct networkStructure *networkPtr, uint16_t networkSize
 		}
 	}
 	
-	
 	// Searching for local device dsn
 	for(uint8_t deviceNum = 0; deviceNum < networkPtr->numOfDevices; deviceNum++){
 		for (uint8_t i = 0; i < 4; i++ ){
@@ -519,7 +518,7 @@ int findDeviceNum(uint8_t DSN[], struct networkStructure* networkPtr){
 uint8_t handleMessages(uint8_t UARTPort, struct networkStructure *networkPtr, uint16_t sizeOfNetwork, uint8_t *networkPtr2, struct myConData* myCons){
 	
 	uint8_t msgType;
-	
+	uint8_t en = 1;
 	
 	if (UARTPort == 0){
 		msgType = getChar(0);		// Message type is stored as the first byte
@@ -537,13 +536,16 @@ uint8_t handleMessages(uint8_t UARTPort, struct networkStructure *networkPtr, ui
 	
 	
 	if (msgType == 0x01){
+		PFD(0x1,1,en);
 		// [msgType (1 byte), deviceNumInPath (1 byte), msgPathSize (1 byte), msgSize (1 byte),
 		//  msgPath (var), destination phone address (6 bytes), source phone address (6 bytes), message (var)]
 		
 		if (UARTPort == 0){
 			uint8_t deviceNumInPath = getChar(0) + 1;		// Increment to this device
 			uint8_t msgPathSize = getChar(0);
-			uint8_t msgSize = getChar(0);
+			uint8_t tempSize[2];
+			
+ 			uint16_t msgSize = *tempSize;
 			uint8_t msg[msgSize];
 			uint8_t msgPath[msgPathSize*4];
 			for (uint8_t i = 0; i < msgPathSize*4; i ++){
@@ -565,7 +567,7 @@ uint8_t handleMessages(uint8_t UARTPort, struct networkStructure *networkPtr, ui
 			
 			// Seeing if the this device is the last in the path, if so send message data to esp to be transmitted to the phone
 			if (deviceNumInPath == msgPathSize){
-				uint8_t espMsg[] = {msgType,destPhoneAdd,srcPhoneAdd,msgSize,msg};
+				uint8_t espMsg[] = {0x02,0x00,msgType,destPhoneAdd,srcPhoneAdd,msgSize,msg};
 				TXWrite(espMsg,sizeof(espMsg),1);
 			}
 			
@@ -573,26 +575,28 @@ uint8_t handleMessages(uint8_t UARTPort, struct networkStructure *networkPtr, ui
 			else{
 				uint8_t msgHeader[] = {msgType,deviceNumInPath,msgPathSize,msgSize};
 				
-				writeDestDSN(msgPath[deviceNumInPath + 1]);		// The next devices DSN
-				
 				// Send [msgType (1 byte), deviceNumInPath (1 byte), msgPathSize (1 byte), msgSize (1 byte),
 				//       msgPath (var), destination phone address (6 bytes), source phone address (6 bytes), message (var)]
 				
-				TXWrite(msgHeader,sizeof(msgHeader),0);
-				TXWrite(msgPath,msgPathSize*4,0);
-				TXWrite(destPhoneAdd,6,0);			// mac address
-				TXWrite(srcPhoneAdd,6,0);			// mac address
+		
+				sendMessageSimple(msgPathSize,deviceNumInPath,msgPath,destPhoneAdd,srcPhoneAdd,msg,msgSize);
 				
-				TXWrite(msg, msgSize,0);
 				
-				sendAck(myCons->myDSN,sourceDSN);
+				
 			}
 		}
+		
+		
 		// If Message from esp
 		else{
 			// Format 0x02,0x00,msgType,msg length,dest mac, source mac, message
 			//                         /Starting here from this point
-			uint8_t msgLen = getChar(1);	// Just 1 byte for now
+			PFD(0x2,1,en);
+			uint8_t *tempSize = malloc(sizeof(uint8_t)*2);
+			*tempSize = getChar(1);
+			*(tempSize + sizeof(uint8_t)) = getChar(1);
+			uint16_t* msgLen = &tempSize;	
+			
 			uint8_t destAdd[6];
 			uint8_t srcAdd[6];
 			uint8_t* destDSN;
@@ -603,27 +607,50 @@ uint8_t handleMessages(uint8_t UARTPort, struct networkStructure *networkPtr, ui
 			for (uint8_t i = 0; i < 12; i++){
 				if (i < 6){
 					destAdd[i] = getChar(1);
+					
 				}
 				else{
 					srcAdd[i-6] = getChar(1);
 				}
 			}
-			for (uint8_t i = 0; i < (msgLen - 12); i++){
+			
+			for (uint8_t i = 0; i < (*msgLen); i++){
+				
 				msg[i] = getChar(1);
 			}
-			
+			TXWrite("AAAAAAAAAAAAAAAAAAA",20,1);
+			TXWrite(*msgLen,2,1);
+			TXWrite(destAdd,6,1);
+			TXWrite(srcAdd,6,1);
+			TXWrite(msg,msgLen,1);
 			
 			destDSN = getDestPhoneAdd(destAdd,myCons->myDSN,networkPtr2);
 			msgDataReturn= buildMsgPath(destDSN,networkPtr,myCons);
-			msgPathSize = *(msgDataReturn + 12);
+			
+			
+			msgPathSize = 2;
 			for (uint8_t i= 0; i < 3; i++){
 				for (uint8_t j= 0; j <4; j++){
 					
 					msgPath[i][j] = *(msgDataReturn + i*4 + j);
 				}
 			}
-			free(msgDataReturn);
-			sendMessageSimple(msgPathSize,0,msgPath,destAdd,srcAdd,msg,msgLen-12);
+			
+			//free(msgDataReturn);
+			
+			/*
+			TXWrite("AAAAAAAAAAAAAAAAAAA",20,1);
+			TXWrite(msgPathSize,1,1);
+			TXWrite("0",1,1);
+			TXWrite(msgPath,(msgPathSize)*4,1);
+			TXWrite(destAdd,6,1);
+			TXWrite(srcAdd,6,1);
+			TXWrite(msg,*msgLen-0xC,1);
+			TXWrite("AAAAAAAAAAAAAAAAAAA",20,1);
+			*/
+			
+			sendMessageSimple(msgPathSize,0,msgPath,destAdd,srcAdd,msg,*msgLen-0xC);
+			PFD(0x3,1,en);
 		}
 		
 	}
@@ -633,6 +660,7 @@ uint8_t handleMessages(uint8_t UARTPort, struct networkStructure *networkPtr, ui
 		sourceDSN[1] = (uint8_t) getChar(0);
 		sourceDSN[2] = (uint8_t) getChar(0);
 		sourceDSN[3] = (uint8_t) getChar(0);
+		
 		uint16_t networkSize = getChar(0);
 		uint8_t newCon = getChar(0);
 		
@@ -658,7 +686,7 @@ uint8_t handleMessages(uint8_t UARTPort, struct networkStructure *networkPtr, ui
 	
 	// Acknowledgment received
 	if(msgType == 0x04){
-		TXWrite(0x16,1,0);
+		
 		return 0x04;													// Will change later when checking connections
 	}
 	
