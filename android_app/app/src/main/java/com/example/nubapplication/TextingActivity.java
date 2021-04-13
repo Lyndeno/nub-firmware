@@ -74,6 +74,8 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
             e.printStackTrace();
         }
 
+        new SocketListener().start();
+
 
         sendbutton.setOnClickListener(this);
 
@@ -82,6 +84,31 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
         disconnect_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String mac_address = SenderMac.getText().toString();
+
+                String[] sendermac_address = mac_address.split(":");
+
+                // convert hex string to byte values
+                byte[] sendermacAddressBytes = new byte[6];
+                for(int i=0; i<6; i++){
+                    Integer hex = Integer.parseInt(sendermac_address[i], 16);
+                    sendermacAddressBytes[i] = hex.byteValue();
+                }
+
+                byte[] connection_status = new byte[8];
+                connection_status[0] = (byte)0x02;
+                connection_status[1] = (byte)0x02;
+
+                System.arraycopy(sendermacAddressBytes, 0, connection_status, 2, sendermacAddressBytes.length);
+                DatagramPacket connection_packet = new DatagramPacket(connection_status, connection_status.length, serverAddr, 3333);
+                
+                try {
+                    socket.send(connection_packet);
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+
                 openMainActivity();
                 wifi_disconnect();
             }
@@ -157,6 +184,36 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
         wifiManager.setWifiEnabled(isTurnToOn);
     }
 
+    public class SocketListener extends Thread {
+        private boolean running;
+        private byte[] buf = new byte[256];
+
+        public SocketListener() {
+
+        }
+
+        public void run() {
+            running = true;
+
+            while (running) {
+                DatagramPacket packet = new DatagramPacket(buf, buf.length);
+
+                try {
+                    socket.receive(packet);
+                    String received = new String(packet.getData(), 0, packet.getLength());
+
+                    String s = textResponse.getText().toString();
+                    if (received.trim().length() != 0)
+                        textResponse.setText(s + "\n    Server Reply : " + received);
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+    }
+
 
 
 
@@ -215,28 +272,28 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
 
                     // set the first byte
                     //byte[] message_array = new byte[1024];
-                    byte[] message_array = new byte[message.getBytes().length + 2 + 12];
+                    byte[] message_array = new byte[message.getBytes().length + 1 + 12];
                     message_array[0] = (byte)0x01;
 
                     // set the second byte for connect/disconnect activity
-                    message_array[1] = (byte)0x02;
+                    //message_array[1] = (byte)0x02;
 
                     // attach the recipient mac address
-                    System.arraycopy(recipientmacAddressBytes,0, message_array, 2, recipientmacAddressBytes.length);
+                    System.arraycopy(recipientmacAddressBytes,0, message_array, 1, recipientmacAddressBytes.length);
 
                     // attach the sender mac address
-                    System.arraycopy(sendermacAddressBytes, 0, message_array, 8, sendermacAddressBytes.length);
+                    System.arraycopy(sendermacAddressBytes, 0, message_array, 7, sendermacAddressBytes.length);
 
                     // Attaching and sending message
-                    System.arraycopy(message.getBytes(), 0, message_array, 14, message.length());
+                    System.arraycopy(message.getBytes(), 0, message_array, 13, message.length());
 
                     packet = new DatagramPacket(message_array, message_array.length, serverAddr, 3333);
                     socket.send(packet);
 
-                    byte[] buf = new byte[4096];
-                    packet = new DatagramPacket(buf, buf.length);
-                    socket.receive(packet);
-                    stringData = new String(buf, 0, packet.getLength());
+                    /*byte[] buf = new byte[4096];
+                    DatagramPacket recv_packet = new DatagramPacket(buf, buf.length);
+                    socket.receive(recv_packet);
+                    stringData = new String(buf, 0, recv_packet.getLength());*/
 
                 }
 
@@ -248,14 +305,14 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
                         socket.close();
                     }
                 }*/
-                handler.post(new Runnable() {
+                /*handler.post(new Runnable() {
                     @Override
                     public void run() {
                         String s = textResponse.getText().toString();
                         if (stringData.trim().length() != 0)
                             textResponse.setText(s + "\n    Server Reply : " + stringData);
                     }
-                });
+                });*/
 
             }
         });
