@@ -180,3 +180,88 @@ int main (void) {
         
     }
 }
+
+void checkReg(){
+	
+	uint8_t hopTable[4]	= {0xFF,0x02,0x00,0x00};
+	uint8_t TXPower[4]	= {0xFF,0x02,0x4D,0x01};		// Setting the power to 25dBm for initial search/ default 
+		
+	uint8_t UARTBaud[4]	= {0xFF,0x02,0x03,0x02};		// Setting BAUD rate to 19.2 kb/s ( also means this is the transmission speed)
+	uint8_t addMode[4]	= {0xFF,0x02,0x4F,0x04};		// Setting address mode as DSN (Volatile address)
+	uint8_t showVer[4]	= {0xFF,0x02,0x0A,0x00};		// Do not show version at start up
+	uint8_t CMDHold[4]	= {0xFF,0x02,0x6E,0x01};		// If CMD_BAR is low, wait until it goes high to send to mcu
+	uint8_t compat[4]	= {0xFF,0x02,0x70,0x00};		// Compatibility mode to enable broadcast function for DSN
+	uint8_t autoAdd[4]	= {0xFF,0x02,0x71,0x04};		// Auto addressing for DNS mode
+	uint8_t myDSN3[4]	= {0xFF,0x02,0xFE,0x34};				// Read command for preprogrammed DNS values, DSN3 is MSB
+	uint8_t myDSN2[4]	= {0xFF,0x02,0xFE,0x35};
+	uint8_t myDSN1[4]	= {0xFF,0x02,0xFE,0x36};
+	uint8_t myDSN0[4]	= {0xFF,0x02,0xFE,0x37};
+	uint8_t LStatus[5]	= {0xFF,0x03,0xFE,0xFE,0x46};	// Status of output lines
+	
+	PORTD &= ~(1 << PORTD5);	// cmd mode
+	
+	uint8_t cmds[][4] = {{0xFF,0x02,0xFE,0x4F},		//ADDMODE			0
+						{0xFF,0x02,0xFE,0x6B},		//DESNTDSN0			1
+						{0xFF,0x02,0xFE,0x70},		//COMPAT			2
+						{0xFF,0x02,0xFE,0x4D},		//TX Power			3
+						{0xFF,0x02,0xFE,0x4E},		//Baud Rate			4
+						{0xFF,0x02,0xFE,0x6E}
+						};	
+	
+	TXWrite(cmds[0],4,0);	
+	TXWrite(cmds[1],4,0);
+	TXWrite(cmds[2],4,0);					
+	TXWrite(cmds[3],4,0);		
+	TXWrite(cmds[4],4,0);
+	_delay_ms(50);
+	
+	
+	
+	
+	PORTD |= ~(1 << PORTD5);	// cmd mode
+	
+}
+
+void test(uint8_t srcDSN){
+	uint8_t Add1[] = {0x0A,0x00,0x12,0xEF}; // Left 
+	uint8_t Add2[] = {0X0A,0X00,0X12,0XF0}; // Right
+	writeDestDSN(Add1);
+	
+	sendMessageSimple2(Add1,Add2,"HHHHHHHHHH\n",11);
+	
+}
+
+
+
+void sendMessageSimple2(uint8_t srcPhoneAdd[4],uint8_t destPhoneAdd[4], unsigned char msg[],uint8_t msgSize){
+	
+	
+	uint8_t msgType = 0x01;	// message
+	
+	
+	
+	
+	// Send [msgType (1 byte), deviceNumInPath (1 byte), msgPathSize (1 byte), msgSize (1 byte),
+	//       msgPath (var), destination phone address (6 bytes), source phone address (6 bytes), message (var)]
+	
+	
+	writeDestDSN(destPhoneAdd);
+	_delay_ms(50);
+	
+	TXWrite(msg,msgSize,0);			// mac address
+	_delay_ms(50);
+	
+	
+	
+}
+
+
+
+// (struct networkStructure*,uint8_t, uint16_t, struct myConData*,uint8_t
+/*
+handleMessages(myCons.myDSN,networkPtr,sizeof(network),networkPtr2,myConsptr);
+uint8_t updateNetworks(struct networkStructure *network, uint8_t *networkPtr, uint16_t networkSize,struct myConData* myCons, uint8_t newCon)
+uint8_t handleMessages(uint8_t *myDSN, struct networkStructure* network, uint16_t sizeOfNetwork, uint8_t *networkPtr, struct myConData* myCons);
+uint8_t handleMessages(uint8_t *myDSN, struct networkStructure* network, uint16_t sizeOfNetwork, uint8_t *networkPtr, struct myConData* myCons){
+sendToNeighbors = updateNetworks(network,networkPtr,sizeOfNetwork,myCons,newCon);
+*/
