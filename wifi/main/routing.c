@@ -122,20 +122,26 @@ void handle_frames_task (void *pvParameters) {
 }
 
 void handle_message_frame (message_frame *rx_frame) {
-    uart_frame tx_bytes;
-    tx_bytes.len = rx_frame->len + 5 - 1; // 5 bytes before message starts minus message header
-    tx_bytes.data = pvPortMalloc(tx_bytes.len * sizeof(uint8_t));
-    tx_bytes.data[0] = 0x02; // NUB header
-    tx_bytes.data[1] = 0x00; // data len
-    tx_bytes.data[2] = 0x01; // msg type
-    tx_bytes.data[3] = (uint8_t)((rx_frame->len - 1) >> 8); // first byte of length
-    tx_bytes.data[4] = (uint8_t)((rx_frame->len - 1) & 0x00FF); // second byte of length
+    if ( check_table(&(rx_frame->data[1])) ) {
+        rx_frame->devaddr = get_sock(&(rx_frame->data[1]));
+        xQueueSendToBack(q_wifi_tx_frames, rx_frame, portMAX_DELAY);
+    } else {
+        uart_frame tx_bytes;
+        tx_bytes.len = rx_frame->len + 5 - 1; // 5 bytes before message starts minus message header
+        tx_bytes.data = pvPortMalloc(tx_bytes.len * sizeof(uint8_t));
+        tx_bytes.data[0] = 0x02; // NUB header
+        tx_bytes.data[1] = 0x00; // data len
+        tx_bytes.data[2] = 0x01; // msg type
+        tx_bytes.data[3] = (uint8_t)((rx_frame->len - 1) >> 8); // first byte of length
+        tx_bytes.data[4] = (uint8_t)((rx_frame->len - 1) & 0x00FF); // second byte of length
 
-    // send message to uart queue
-    for (size_t i = 0; i < rx_frame->len - 1; i++) {
-        tx_bytes.data[i + 5] = rx_frame->data[i + 1];
+        // send message to uart queue
+        for (size_t i = 0; i < rx_frame->len - 1; i++) {
+            tx_bytes.data[i + 5] = rx_frame->data[i + 1];
+        }
+        xQueueSendToBack(q_uart_tx_bytes, &tx_bytes, portMAX_DELAY);
     }
-    xQueueSendToBack(q_uart_tx_bytes, &tx_bytes, portMAX_DELAY);
+    
 }
 
 void handle_connection_frame (message_frame *rx_frame) {
@@ -242,6 +248,16 @@ struct sockaddr_in get_sock(uint8_t *mac) {
     return wifi_connection_table[i].netaddr;
 
     //TODO: Handle no existing devices instead of returning that last one
+}
+
+bool check_table(uint8_t *mac) {
+    size_t i;
+    for (i = 0; i < ESP_WIFI_MAX_CONN; i++) {
+        if ( compare_MAC(mac, wifi_connection_table[i].mac) && wifi_connection_table[i].state == Connected ) {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool compare_MAC (uint8_t *mac1, uint8_t *mac2) {

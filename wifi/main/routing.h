@@ -52,6 +52,8 @@ void route_init(void);
  */
 void handle_message_frame (message_frame *rx_frame);
 
+bool check_table(uint8_t *mac);
+
 /**
  * Take two mac addresses and compare them
  * 
