@@ -43,6 +43,8 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
     WifiConfiguration conf;
     public static String networkSSID = "NUB";
     public static String networkPass = "capstone1234";
+    public DatagramSocket socket;
+    public InetAddress serverAddr;
 
 
 
@@ -58,6 +60,15 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
         Recipient = (EditText) findViewById(R.id.number);
         disconnect_button = (Button) findViewById(R.id.disconnect_button);
         SenderMac = (EditText) findViewById(R.id.sender_mac);
+
+        socket = null;
+        try {
+            socket = new DatagramSocket();
+            serverAddr = InetAddress.getByName(IpAddress);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
         sendbutton.setOnClickListener(this);
@@ -181,10 +192,9 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
 
 
                 // Socket Client Set Up
-                DatagramSocket socket = null;
+
                 try {
-                    socket = new DatagramSocket();
-                    InetAddress serverAddr = InetAddress.getByName(IpAddress);
+
                     DatagramPacket packet;
 
                     // set the first byte
@@ -216,11 +226,11 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
                 catch (IOException e) {
                     e.printStackTrace();
                 }
-                finally {
+                /*finally {
                     if (socket!= null){
                         socket.close();
                     }
-                }
+                }*/
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
