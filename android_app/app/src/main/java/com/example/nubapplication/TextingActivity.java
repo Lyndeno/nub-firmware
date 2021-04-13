@@ -200,11 +200,17 @@ public class TextingActivity extends AppCompatActivity implements View.OnClickLi
 
                 try {
                     socket.receive(packet);
+                    byte[] received_bytes = new byte[packet.getLength()];
+                    received_bytes = packet.getData();
                     String received = new String(packet.getData(), 0, packet.getLength());
+
+                    String senderString = String.format("%x:%x:%x:%x:%x:%x", received_bytes[7],
+                            received_bytes[8], received_bytes[9], received_bytes[10],
+                            received_bytes[11], received_bytes[12]);
 
                     String s = textResponse.getText().toString();
                     if (received.trim().length() != 0)
-                        textResponse.setText("Server Reply : " + received.substring(13) + "\n" + s);
+                        textResponse.setText(senderString +  " : " + received.substring(13) + "\n" + s);
                 }
                 catch (IOException e) {
                     e.printStackTrace();
