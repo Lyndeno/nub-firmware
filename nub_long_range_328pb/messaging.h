@@ -16,7 +16,7 @@ uint8_t* getDestPhoneAdd(uint8_t destPhoneAdd[6],uint8_t myDSN[], struct network
 
 void sendAck(uint8_t srcDSN[], uint8_t destDSN[]);
 
-void sendMessageSimple(uint8_t srcDSN[], uint8_t destDSN[], unsigned char msg[],uint8_t msgSize);
+void sendMessageSimple(uint8_t msgPathSize, uint8_t deviceNumInPath, uint8_t msgPath[],uint8_t destPhoneAdd[6],uint8_t srcPhoneAdd[6], unsigned char msg[],uint16_t* msgSize);
 
 int findDeviceNum(uint8_t DSN, struct networkStructure network);
 

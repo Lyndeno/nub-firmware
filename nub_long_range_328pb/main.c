@@ -169,17 +169,20 @@ int main(void)
 			
 			skipBuffer(0);
 		}
+		
 		if(Bytes1UnRead() > 0){
 			UARTPort = 1;
+			//TXWrite("AAAAAAAAAAAAAAAAAAAA",20,1);
+			//TXWrite(networkPtr,networkSize,1);
+			//TXWrite("AAAAAAAAAAAAAAAAAAAA",20,1);
 			handleMessages(UARTPort,networkPtr,networkSize,networkPtr2,myConsptr);
 			skipBuffer(1);
-			TXWrite(networkPtr,networkSize,1);
+			
 		}
-		
 		
 		//checkReg();
 		//test();
-		/*
+		/* For checking struct
 		i++;
 		if (i > 100){
 			
