@@ -122,68 +122,6 @@ void skipBuffer(uint8_t UARTPort){
 	
 }
 
-// Allows the program to jump through the rx0 buffer 
-uint8_t parseBufferForVal(int movePtr, uint16_t jmpToPos){
-	
-	uint8_t returnChar;
-	// No jump to specific address, 
-	if (jmpToPos == 0){
-		if (rx0ReadPos + movePtr > RX0_BUFFER_SIZE){
-			rx0ReadPos = rx0ReadPos + movePtr - RX0_BUFFER_SIZE;
-		}
-		else{
-			rx0ReadPos= rx0ReadPos + movePtr;
-		}
-		
-		returnChar = rx0Buffer[rx0ReadPos];
-		if (movePtr > 0){
-			unread0Bytes = unread0Bytes - movePtr;
-		}
-		
-	}
-	
-	else{
-		
-		// Jump to specific address then move read position 
-		if (jmpToPos < rx0ReadPos){
-			unread0Bytes = RX0_BUFFER_SIZE - rx0ReadPos + jmpToPos;
-		}
-		else{
-			unread0Bytes = jmpToPos - rx0ReadPos;
-		}
-		
-		rx0ReadPos = jmpToPos;
-		
-		if (rx0ReadPos + movePtr > RX0_BUFFER_SIZE){
-			rx0ReadPos = rx0ReadPos + movePtr - RX0_BUFFER_SIZE;
-		}
-		else{
-			rx0ReadPos = rx0ReadPos + movePtr;
-		}
-		
-		
-		returnChar = rx0Buffer[rx0ReadPos];
-		
-		if (movePtr > 0){
-			unread0Bytes = unread0Bytes - movePtr;
-		}
-	}
-	
-	return returnChar;
-	
-}
-
-
-uint16_t  parseBufferForPtr(int movePtr){
-	
-	if (rx0ReadPos + movePtr > RX0_BUFFER_SIZE){
-		return rx0ReadPos + movePtr - RX0_BUFFER_SIZE;
-	}
-	else{
-		return rx0ReadPos + movePtr;
-	}
-	
-}
 
 uint8_t Bytes0UnRead(){
 	

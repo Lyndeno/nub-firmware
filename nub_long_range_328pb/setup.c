@@ -152,7 +152,7 @@ uint8_t * setupTransceiver(){
 	rx0ReadPos = rx0WritePos -1;
 	myDSNVal[3] = getChar(0);
 	
-	_delay_ms(3000);
+	
 	
 	TXWrite(myDSNVal,4,0);
 	_delay_ms(1000);
