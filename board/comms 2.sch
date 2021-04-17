@@ -1382,11 +1382,6 @@ DIN A3, landscape with location and doc. field</description>
 </net>
 <net name="V_BATT" class="0">
 <segment>
-<pinref part="CON1" gate="G$1" pin="2"/>
-<wire x1="-132.08" y1="173.99" x2="-127" y2="173.99" width="0.1524" layer="91"/>
-<label x="-129.54" y="176.53" size="1.778" layer="95"/>
-</segment>
-<segment>
 <wire x1="-180.34" y1="59.69" x2="-170.18" y2="59.69" width="0.1524" layer="91"/>
 <wire x1="-170.18" y1="59.69" x2="-162.56" y2="59.69" width="0.1524" layer="91"/>
 <wire x1="-170.18" y1="59.69" x2="-170.18" y2="57.15" width="0.1524" layer="91"/>
@@ -1527,6 +1522,11 @@ DIN A3, landscape with location and doc. field</description>
 <wire x1="-5.08" y1="175.26" x2="-5.08" y2="180.34" width="0.1524" layer="91"/>
 <label x="-5.08" y="182.88" size="1.778" layer="95"/>
 </segment>
+<segment>
+<pinref part="CON1" gate="G$1" pin="2"/>
+<wire x1="-132.08" y1="173.99" x2="-127" y2="173.99" width="0.1524" layer="91"/>
+<label x="-129.54" y="176.53" size="1.778" layer="95"/>
+</segment>
 </net>
 <net name="TXD_WIFI" class="0">
 <segment>
@@ -1595,9 +1595,9 @@ DIN A3, landscape with location and doc. field</description>
 <label x="30.48" y="78.74" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="U2" gate="G$1" pin="PD0/PTCXY/OC3A/RXD0"/>
-<wire x1="-104.648" y1="144.78" x2="-99.568" y2="144.78" width="0.1524" layer="91"/>
-<label x="-99.568" y="144.78" size="1.778" layer="95"/>
+<pinref part="U2" gate="G$1" pin="PD4/XCK0/T0/PTCXY"/>
+<wire x1="-104.648" y1="134.62" x2="-99.06" y2="134.62" width="0.1524" layer="91"/>
+<label x="-99.06" y="134.62" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="EX" class="0">
@@ -1607,9 +1607,9 @@ DIN A3, landscape with location and doc. field</description>
 <label x="30.48" y="76.2" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="U2" gate="G$1" pin="PD1/PTCXY/OC4A/TXD0"/>
-<wire x1="-104.648" y1="142.24" x2="-99.568" y2="142.24" width="0.1524" layer="91"/>
-<label x="-99.568" y="142.24" size="1.778" layer="95"/>
+<pinref part="U2" gate="G$1" pin="PE0/SDA1/ICP4/ACO/PTCXY"/>
+<wire x1="-104.648" y1="114.3" x2="-99.06" y2="114.3" width="0.1524" layer="91"/>
+<label x="-99.06" y="114.3" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="CRESP" class="0">
@@ -1643,9 +1643,9 @@ DIN A3, landscape with location and doc. field</description>
 <label x="15.24" y="68.58" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="U2" gate="G$1" pin="PD4/XCK0/T0/PTCXY"/>
-<wire x1="-104.648" y1="134.62" x2="-99.06" y2="134.62" width="0.1524" layer="91"/>
-<label x="-99.06" y="134.62" size="1.778" layer="95"/>
+<pinref part="U2" gate="G$1" pin="PD0/PTCXY/OC3A/RXD0"/>
+<wire x1="-104.648" y1="144.78" x2="-99.568" y2="144.78" width="0.1524" layer="91"/>
+<label x="-99.568" y="144.78" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="CMD_DATA_IN" class="0">
@@ -1655,9 +1655,9 @@ DIN A3, landscape with location and doc. field</description>
 <label x="17.78" y="66.04" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="U2" gate="G$1" pin="PE0/SDA1/ICP4/ACO/PTCXY"/>
-<wire x1="-104.648" y1="114.3" x2="-99.06" y2="114.3" width="0.1524" layer="91"/>
-<label x="-99.06" y="114.3" size="1.778" layer="95"/>
+<pinref part="U2" gate="G$1" pin="PD1/PTCXY/OC4A/TXD0"/>
+<wire x1="-104.648" y1="142.24" x2="-99.568" y2="142.24" width="0.1524" layer="91"/>
+<label x="-99.568" y="142.24" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="PWR_DOWN" class="0">
